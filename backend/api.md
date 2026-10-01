@@ -15,6 +15,75 @@ no `.env` ou no `docker-compose.yml`).
 curl -X GET http://localhost:3000/api/health
 ```
 
+## Auth
+
+### Login
+
+```bash
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "jane.doe@example.com",
+    "password": "senha12345"
+  }'
+```
+
+Resposta (`200`):
+
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": 1,
+    "name": "Jane Doe",
+    "email": "jane.doe@example.com",
+    "role": "user"
+  }
+}
+```
+
+Credenciais inválidas (e-mail inexistente ou senha incorreta — resposta
+idêntica para ambos os casos, para não revelar se o e-mail existe):
+
+```bash
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "jane.doe@example.com",
+    "password": "senha-errada"
+  }'
+```
+
+Resposta (`401`):
+
+```json
+{
+  "message": "Credenciais inválidas",
+  "error": "Unauthorized",
+  "statusCode": 401
+}
+```
+
+E-mail em formato inválido → `400 Bad Request`.
+
+### Autenticando requisições
+
+Rotas protegidas exigem o `accessToken` retornado pelo login no cabeçalho
+`Authorization`:
+
+```bash
+curl -X GET http://localhost:3000/api/users \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..."
+```
+
+- Sem o cabeçalho `Authorization` → `401 Unauthorized`.
+- Token inválido, malformado ou expirado → `401 Unauthorized`.
+- Token válido, mas role sem permissão para a rota (quando a rota exigir um
+  papel específico via `@Roles(...)`) → `403 Forbidden`.
+
+O payload do JWT carrega apenas `sub` (id do usuário), `email` e `role` —
+nunca a senha ou outros dados pessoais.
+
 ## Users
 
 Modelo de usuário (`User`):
@@ -156,9 +225,10 @@ Outros exemplos de erro esperados:
   obrigatórios ausentes retornam `400`.
 - O campo `password` nunca volta nas respostas (`@Exclude()` na entity
   `User`).
-- Autenticação (login/JWT) ainda não foi implementada; fica para uma feature
-  posterior. O campo `role` já existe no modelo para ser usado por esse
-  futuro módulo.
+- Autenticação é feita via `POST /api/auth/login` (ver seção [Auth](#auth)),
+  que retorna um JWT. Rotas que exigirem autenticação devem usar o
+  `JwtAuthGuard` do módulo `auth`; rotas que exigirem um papel específico
+  também usam o `RolesGuard` + decorator `@Roles(...)`.
 - Substitua o `1` no path de `:id` pelo id real retornado no `POST`.
 - Conforme novos módulos forem criados (ver [`pattern.md`](pattern.md)),
   adicione as novas rotas aqui.
