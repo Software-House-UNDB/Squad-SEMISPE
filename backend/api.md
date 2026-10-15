@@ -218,11 +218,17 @@ Outros exemplos de erro esperados:
 
 ## Partners
 
+- Todas as rotas `GET` são públicas e não precisam de autenticação.
+- O token é obtido no login (veja seção Auth)
+- Funções de escrita referentes ao painel de admin (`POST`, `PATCH` e `DELETE`) requerem token de usuário com role `admin`.
+- Usuário sem token ou token inválido recebe `401`, um usuário que tente uma função de escrita sem role de `admin` recebe ` `.
+
 ### Criar Parceiro
 
 ```bash
 curl -X POST http://localhost:3000/api/partners \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..." \
   -d '{
     "name": "Empresa X",
     "email": "contato@empresax.com",
@@ -249,6 +255,7 @@ curl -X GET http://localhost:3000/api/partners/1
 ```bash
 curl -X PATCH http://localhost:3000/api/partners/1 \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..." \
   -d '{
     "logoUrl": "http://empresay.com/logo.png"
   }'
@@ -257,7 +264,8 @@ curl -X PATCH http://localhost:3000/api/partners/1 \
 ### Remover um parceiro
 
 ```bash
-curl -X DELETE http://localhost:3000/api/partners/1
+curl -X DELETE http://localhost:3000/api/partners/1 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..."
 ```
 
 ## Notas
