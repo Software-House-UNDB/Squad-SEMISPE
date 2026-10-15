@@ -57,6 +57,50 @@ curl -X PATCH http://localhost:3000/api/users/1 \
 curl -X DELETE http://localhost:3000/api/users/1
 ```
 
+## Partners
+
+### Criar Parceiro
+
+```bash
+curl -X POST http://localhost:3000/api/partners \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Empresa X",
+    "email": "contato@empresax.com",
+    "description": "Empresa de tecnologia instalada no Parque Tecnológico.",
+    "shortDescription": "Tecnologia e inovação",
+    "logoUrl": "https://empresax.com/logo.png"
+  }'
+```
+
+### Listar Parceiros
+
+```bash
+curl -X GET http://localhost:3000/api/partners
+```
+
+### Buscar um Parceiro pelo id
+
+```bash
+curl -X GET http://localhost:3000/api/partners/1
+```
+
+### Atualizar um Parceiro (parcial)
+
+```bash
+curl -X PATCH http://localhost:3000/api/partners/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "logoUrl": "http://empresay.com/logo.png"
+  }'
+```
+
+### Remover um parceiro
+
+```bash
+curl -X DELETE http://localhost:3000/api/partners/1
+```
+
 ## Notas
 
 - Todas as rotas ficam sob o prefixo `/api` (definido em
@@ -69,3 +113,10 @@ curl -X DELETE http://localhost:3000/api/users/1
 - Substitua o `1` no path de `:id` pelo id real retornado no `POST`.
 - Conforme novos módulos forem criados (ver [`pattern.md`](pattern.md)),
   adicione as novas rotas aqui.
+- `name`, `email`, `description` e `shortDescription` são obrigatórios na criação de parceiros,
+  diferentemente do `logoUrl`.
+- O não preenchimento de campos obrigatórios no `POST` retornará 400.
+- Campo `shortDescription` possui limite de 150 caracteres, serve para descrever o que a parceria
+  com aquela empresa traz de benefícios.
+- Nenhum dado é obrigatório na edição dos parceiros, no entanto os campos ainda passam pela validação.
+- Tentar cadastrar um email que pertence a outro parceiro retorna `409` no `POST` e `PATCH`
