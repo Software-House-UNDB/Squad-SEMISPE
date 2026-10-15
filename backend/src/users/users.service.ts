@@ -1,12 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 
 const SALT_ROUNDS = 10;
+
+interface MysqlDuplicateEntryError {
+  code: string;
+  sqlMessage?: string;
+  message: string;
+}
 
 @Injectable()
 export class UsersService {
@@ -18,7 +28,12 @@ export class UsersService {
   async create(dto: CreateUserDto): Promise<User> {
     const password = await bcrypt.hash(dto.password, SALT_ROUNDS);
     const user = this.usersRepository.create({ ...dto, password });
-    return this.usersRepository.save(user);
+
+    try {
+      return await this.usersRepository.save(user);
+    } catch (error) {
+      this.rethrowAsConflict(error);
+    }
   }
 
   findAll(): Promise<User[]> {
@@ -34,7 +49,9 @@ export class UsersService {
   }
 
   findByEmail(email: string): Promise<User | null> {
-    return this.usersRepository.findOneBy({ email });
+    return this.usersRepository.findOneBy({
+      email: email.trim().toLowerCase(),
+    });
   }
 
   async update(id: number, dto: UpdateUserDto): Promise<User> {
@@ -52,7 +69,11 @@ export class UsersService {
       throw new NotFoundException(`User with id ${id} not found`);
     }
 
-    return this.usersRepository.save(user);
+    try {
+      return await this.usersRepository.save(user);
+    } catch (error) {
+      this.rethrowAsConflict(error);
+    }
   }
 
   async remove(id: number): Promise<void> {
@@ -60,5 +81,36 @@ export class UsersService {
     if (result.affected === 0) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
+  }
+
+  private rethrowAsConflict(error: unknown): never {
+    if (error instanceof QueryFailedError) {
+      const driverError = error.driverError as
+        MysqlDuplicateEntryError | undefined;
+      if (driverError?.code === 'ER_DUP_ENTRY') {
+        const message = driverError.sqlMessage ?? driverError.message;
+
+        if (message.includes('UQ_users_email')) {
+          throw new ConflictException(
+            'Já existe um usuário cadastrado com este e-mail.',
+          );
+        }
+        if (message.includes('UQ_users_cpf')) {
+          throw new ConflictException(
+            'Já existe um usuário cadastrado com este CPF.',
+          );
+        }
+        if (message.includes('UQ_users_cnpj')) {
+          throw new ConflictException(
+            'Já existe um usuário cadastrado com este CNPJ.',
+          );
+        }
+        throw new ConflictException(
+          'Dado duplicado: já existe um registro com esse valor.',
+        );
+      }
+    }
+
+    throw error;
   }
 }

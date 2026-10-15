@@ -10,7 +10,7 @@ export default () => ({
     database: process.env.DB_DATABASE ?? 'semispe',
   },
   jwt: {
-    secret: process.env.JWT_SECRET ?? 'change-me',
+    secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN ?? '1d',
   },
 });
