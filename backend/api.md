@@ -71,9 +71,13 @@ E-mail em formato inválido → `400 Bad Request`.
 Rotas protegidas exigem o `accessToken` retornado pelo login no cabeçalho
 `Authorization`:
 
+O exemplo abaixo usa um token de administrador para alterar um espaço:
+
 ```bash
-curl -X GET http://localhost:3000/api/users \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..."
+curl -X PATCH http://localhost:3000/api/spaces/1 \
+  -H "Authorization: Bearer TOKEN_DO_ADMIN" \
+  -H "Content-Type: application/json" \
+  -d '{"capacity": 80}'
 ```
 
 - Sem o cabeçalho `Authorization` → `401 Unauthorized`.
@@ -104,7 +108,7 @@ caracteres não numéricos são removidos automaticamente antes da validação e
 da persistência. Não é aplicado algoritmo de dígito verificador nesta etapa,
 apenas a checagem de quantidade de dígitos.
 
-O campo `role` existe para uso futuro do módulo de autenticação/autorização.
+O campo `role` é usado pelo módulo de autenticação/autorização.
 `CreateUserDto` e `UpdateUserDto` não expõem esse campo — qualquer tentativa
 de enviá-lo é rejeitada com `400` pelo `ValidationPipe` (`whitelist` +
 `forbidNonWhitelisted`), impedindo que um cliente se autopromova a
@@ -216,13 +220,199 @@ Outros exemplos de erro esperados:
   (`property role should not exist`).
 - Usuário inexistente em `GET/PATCH/DELETE /users/:id` → `404 Not Found`.
 
+## Spaces
+
+Cadastro dos espaços físicos do Parque Tecnológico. A solicitação de reservas
+é uma funcionalidade separada.
+
+| Campo | Obrigatório na criação | Observações |
+| ----- | ---------------------- | ----------- |
+| `id` | — | gerado automaticamente; não enviar no corpo |
+| `name` | sim | texto não vazio, até 150 caracteres; espaços nas bordas são removidos; nomes repetidos são permitidos |
+| `description` | não | texto opcional; `null` representa ausência de descrição |
+| `capacity` | sim | número inteiro maior que zero, até 2147483647 |
+| `photoUrls` | não | lista de URLs HTTP/HTTPS; começa como `[]` quando omitida; arquivos de imagem não são enviados por esta API |
+| `equipment` | não | lista de nomes não vazios; começa como `[]` quando omitida |
+| `createdAt` / `updatedAt` | — | gerados automaticamente; não enviar no corpo |
+
+| Método | Rota | Acesso | Sucesso |
+| ------ | ---- | ------ | ------- |
+| GET | `/api/spaces` | público | `200` com uma lista |
+| GET | `/api/spaces/:id` | público | `200` com o espaço |
+| POST | `/api/spaces` | administrador | `201` com o espaço criado |
+| PATCH | `/api/spaces/:id` | administrador | `200` com o espaço atualizado |
+| DELETE | `/api/spaces/:id` | administrador | `200` sem corpo |
+
+Nas três rotas de alteração:
+
+- Sem token, token inválido ou expirado → `401`.
+- Token válido de usuário com `role: "user"` → `403`.
+- Token válido de usuário com `role: "admin"` → a requisição segue para validação e execução.
+
+### Preparar administrador para o teste local
+
+Na raiz do repositório, com o banco e o backend em execução:
+
+```bash
+docker compose exec semispe-back npm run dev:spaces-admin
+```
+
+Esse comando é exclusivo do ambiente de desenvolvimento e cria a conta abaixo
+com senha em hash. Se o e-mail já pertencer a uma conta com outras credenciais
+ou outro papel, o comando interrompe e preserva a conta existente.
+
+```bash
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin.espacos@example.com",
+    "password": "EspacosTeste123!"
+  }'
+```
+
+Confira `user.role: "admin"` na resposta e copie o `accessToken`. Nos exemplos
+seguintes, substitua `TOKEN_DO_ADMIN` por esse token.
+
+No Postman, configure **Authorization → Bearer Token** e cole somente o token,
+sem o prefixo `Bearer`. Para `POST` e `PATCH`, use **Body → raw → JSON**.
+As consultas `GET` podem usar **No Auth**.
+
+### Criar espaço
+
+```bash
+curl -X POST http://localhost:3000/api/spaces \
+  -H "Authorization: Bearer TOKEN_DO_ADMIN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Miniauditório",
+    "description": "Espaço para palestras e apresentações.",
+    "capacity": 60,
+    "photoUrls": ["https://example.com/miniauditorio.jpg"],
+    "equipment": ["Projetor", "Microfone"]
+  }'
+```
+
+Resposta de exemplo (`201`):
+
+```json
+{
+  "id": 1,
+  "name": "Miniauditório",
+  "description": "Espaço para palestras e apresentações.",
+  "capacity": 60,
+  "photoUrls": ["https://example.com/miniauditorio.jpg"],
+  "equipment": ["Projetor", "Microfone"],
+  "createdAt": "2026-10-13T12:00:00.000Z",
+  "updatedAt": "2026-10-13T12:00:00.000Z"
+}
+```
+
+Guarde o `id` real retornado. Substitua o `1` dos exemplos seguintes por esse
+valor; o banco pode já ter utilizado outros IDs.
+
+### Listar espaços
+
+```bash
+curl -X GET http://localhost:3000/api/spaces
+```
+
+### Buscar espaço por id
+
+```bash
+curl -X GET http://localhost:3000/api/spaces/1
+```
+
+### Atualizar parcialmente
+
+```bash
+curl -X PATCH http://localhost:3000/api/spaces/1 \
+  -H "Authorization: Bearer TOKEN_DO_ADMIN" \
+  -H "Content-Type: application/json" \
+  -d '{"capacity": 80}'
+```
+
+Campos omitidos mantêm seus valores. Uma lista enviada substitui a lista
+anterior por inteiro. Este exemplo troca os equipamentos por `TV`:
+
+```bash
+curl -X PATCH http://localhost:3000/api/spaces/1 \
+  -H "Authorization: Bearer TOKEN_DO_ADMIN" \
+  -H "Content-Type: application/json" \
+  -d '{"equipment": ["TV"]}'
+```
+
+Para limpar as listas e a descrição:
+
+```bash
+curl -X PATCH http://localhost:3000/api/spaces/1 \
+  -H "Authorization: Bearer TOKEN_DO_ADMIN" \
+  -H "Content-Type: application/json" \
+  -d '{"equipment": [], "photoUrls": [], "description": null}'
+```
+
+`null` não é aceito em `name`, `capacity`, `equipment` ou `photoUrls`. Listas
+vazias removem os itens do cadastro; não apagam arquivos de imagens.
+
+### Remover espaço
+
+```bash
+curl -X DELETE http://localhost:3000/api/spaces/1 \
+  -H "Authorization: Bearer TOKEN_DO_ADMIN"
+```
+
+A exclusão é física. A resposta é `200` sem corpo; consultar o mesmo ID depois
+retorna `404`.
+
+### Testar validação e permissões
+
+Com o token de admin, capacidade zero retorna `400`:
+
+```bash
+curl -X POST http://localhost:3000/api/spaces \
+  -H "Authorization: Bearer TOKEN_DO_ADMIN" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Miniauditório", "capacity": 0}'
+```
+
+```json
+{
+  "message": ["A capacidade deve ser maior que zero."],
+  "error": "Bad Request",
+  "statusCode": 400
+}
+```
+
+Outros casos para conferir no Postman:
+
+- Nome vazio ou só com espaços, capacidade fracionada, URL inválida ou item
+  de equipamento vazio → `400`, com mensagens dos validators em português.
+- Enviar campos desconhecidos, como `id` ou `role`, no corpo → `400`.
+- ID não numérico, como `/api/spaces/abc` → `400`.
+- Espaço inexistente em `GET/PATCH/DELETE /spaces/:id` → `404`.
+- Repetir a mesma alteração com **No Auth** → `401`.
+- Fazer login com uma conta criada por `POST /api/users` e usar seu token nas
+  alterações de espaços → `403`, pois o cadastro padrão recebe `role: "user"`.
+
+### Testes automatizados de espaços
+
+```bash
+docker compose exec semispe-back npm test -- --runInBand
+docker compose exec semispe-back npm run test:spaces:service
+docker compose exec semispe-back npm run test:spaces:http
+```
+
+A suíte Jest confere os DTOs e as permissões do controller. Os dois testes
+adicionais usam o MySQL local; o teste HTTP também usa a API em execução.
+Eles criam registros temporários com identificadores exclusivos e os removem
+ao finalizar. Ambos exigem `NODE_ENV=development`.
+
 ## Notas
 
 - Todas as rotas ficam sob o prefixo `/api` (definido em
   [`main.ts`](src/main.ts) via `setGlobalPrefix`).
 - O corpo de `POST`/`PATCH` é validado pelo `ValidationPipe` global: campos
-  fora do DTO (`CreateUserDto`/`UpdateUserDto`) são rejeitados, e campos
-  obrigatórios ausentes retornam `400`.
+  fora do respectivo DTO são rejeitados. Na criação, campos obrigatórios
+  ausentes retornam `400`.
 - O campo `password` nunca volta nas respostas (`@Exclude()` na entity
   `User`).
 - Autenticação é feita via `POST /api/auth/login` (ver seção [Auth](#auth)),
