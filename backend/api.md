@@ -57,6 +57,19 @@ curl -X PATCH http://localhost:3000/api/users/1 \
 curl -X DELETE http://localhost:3000/api/users/1
 ```
 
+## Stations
+
+### Listar estações com qualidade do ar
+
+Proxy para a API da Aurassure (`things/list`). Exige `AURASSURE_ACCESS_ID` e
+`AURASSURE_ACCESS_KEY` no `.env` da raiz; sem elas retorna `503`. Retorna
+`id`, `name`, `latitude`, `longitude`, `online`, `lastDataReceivedAt`, `aqi` e
+`parameters`.
+
+```bash
+curl -X GET http://localhost:3000/api/stations
+```
+
 ## Notas
 
 - Todas as rotas ficam sob o prefixo `/api` (definido em

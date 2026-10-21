@@ -1,2 +1,5 @@
 # Dados do MySQL em Docker (volume montado por docker-compose.yml)
 /docker/
+
+# Credenciais lidas pelo docker-compose.yml
+/.env

@@ -13,4 +13,13 @@ export default () => ({
     secret: process.env.JWT_SECRET ?? 'change-me',
     expiresIn: process.env.JWT_EXPIRES_IN ?? '1d',
   },
+  aurassure: {
+    baseUrl:
+      process.env.AURASSURE_BASE_URL ??
+      'https://app.aurassure.com/-/api/iot-platform/v1.1.0',
+    clientId: process.env.AURASSURE_CLIENT_ID ?? '21645',
+    applicationId: process.env.AURASSURE_APPLICATION_ID ?? '16',
+    accessId: process.env.AURASSURE_ACCESS_ID ?? '',
+    accessKey: process.env.AURASSURE_ACCESS_KEY ?? '',
+  },
 });
