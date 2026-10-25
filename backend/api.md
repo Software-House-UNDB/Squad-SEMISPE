@@ -233,6 +233,7 @@ Cadastro dos espaços físicos do Parque Tecnológico. A solicitação de reserv
 | `capacity` | sim | número inteiro maior que zero, até 2147483647 |
 | `photoUrls` | não | lista de URLs HTTP/HTTPS; começa como `[]` quando omitida; arquivos de imagem não são enviados por esta API |
 | `equipment` | não | lista de nomes não vazios; começa como `[]` quando omitida |
+| `state` | não | `"active"` ou `"inactive"`; começa como `"active"` quando omitido |
 | `createdAt` / `updatedAt` | — | gerados automaticamente; não enviar no corpo |
 
 | Método | Rota | Acesso | Sucesso |
@@ -302,6 +303,7 @@ Resposta de exemplo (`201`):
   "capacity": 60,
   "photoUrls": ["https://example.com/miniauditorio.jpg"],
   "equipment": ["Projetor", "Microfone"],
+  "state": "active",
   "createdAt": "2026-10-13T12:00:00.000Z",
   "updatedAt": "2026-10-13T12:00:00.000Z"
 }
@@ -341,6 +343,15 @@ curl -X PATCH http://localhost:3000/api/spaces/1 \
   -d '{"equipment": ["TV"]}'
 ```
 
+Para inativar ou reativar um espaço (controlando a exibição no front-end):
+
+```bash
+curl -X PATCH http://localhost:3000/api/spaces/1 \
+  -H "Authorization: Bearer TOKEN_DO_ADMIN" \
+  -H "Content-Type: application/json" \
+  -d '{"state": "inactive"}'
+```
+
 Para limpar as listas e a descrição:
 
 ```bash
@@ -350,8 +361,8 @@ curl -X PATCH http://localhost:3000/api/spaces/1 \
   -d '{"equipment": [], "photoUrls": [], "description": null}'
 ```
 
-`null` não é aceito em `name`, `capacity`, `equipment` ou `photoUrls`. Listas
-vazias removem os itens do cadastro; não apagam arquivos de imagens.
+`null` não é aceito em `name`, `capacity`, `equipment`, `photoUrls` ou `state`.
+Listas vazias removem os itens do cadastro; não apagam arquivos de imagens.
 
 ### Remover espaço
 
@@ -384,8 +395,9 @@ curl -X POST http://localhost:3000/api/spaces \
 
 Outros casos para conferir no Postman:
 
-- Nome vazio ou só com espaços, capacidade fracionada, URL inválida ou item
-  de equipamento vazio → `400`, com mensagens dos validators em português.
+- Nome vazio ou só com espaços, capacidade fracionada, URL inválida, item
+  de equipamento vazio ou `state` diferente de `"active"`/`"inactive"` → `400`,
+  com mensagens dos validators em português.
 - Enviar campos desconhecidos, como `id` ou `role`, no corpo → `400`.
 - ID não numérico, como `/api/spaces/abc` → `400`.
 - Espaço inexistente em `GET/PATCH/DELETE /spaces/:id` → `404`.
@@ -409,7 +421,7 @@ ao finalizar. Ambos exigem `NODE_ENV=development`.
 ## Notas
 
 - Todas as rotas ficam sob o prefixo `/api` (definido em
-  [`main.ts`](src/main.ts) via `setGlobalPrefix`).
+  [main.ts](https://www.google.com/search?q=src/main.ts) via `setGlobalPrefix`).
 - O corpo de `POST`/`PATCH` é validado pelo `ValidationPipe` global: campos
   fora do respectivo DTO são rejeitados. Na criação, campos obrigatórios
   ausentes retornam `400`.

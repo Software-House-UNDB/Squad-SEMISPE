@@ -12,7 +12,7 @@ import * as request from 'supertest';
 import { Role, User } from '../users/entities/user.entity';
 import { CreateSpaceDto } from './dto/create-space.dto';
 import { UpdateSpaceDto } from './dto/update-space.dto';
-import { Space } from './entities/space.entity';
+import { Space, SpaceState } from './entities/space.entity';
 import { SpacesModule } from './spaces.module';
 import { SpacesService } from './spaces.service';
 
@@ -156,6 +156,7 @@ describe('SpacesController (HTTP, validação e permissões)', () => {
             ...payload,
             id: 1,
             description: null,
+            state: SpaceState.ACTIVE,
             createdAt: '2026-01-01T12:00:00.000Z',
             updatedAt: '2026-01-01T12:00:00.000Z',
           },

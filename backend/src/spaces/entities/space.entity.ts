@@ -6,6 +6,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+export enum SpaceState {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}
+
 @Entity('spaces')
 export class Space {
   @PrimaryGeneratedColumn()
@@ -25,6 +30,9 @@ export class Space {
 
   @Column({ type: 'json' })
   equipment: string[] = [];
+
+  @Column({ type: 'enum', enum: SpaceState, default: SpaceState.ACTIVE })
+  state: SpaceState = SpaceState.ACTIVE;
 
   @CreateDateColumn()
   createdAt: Date;
