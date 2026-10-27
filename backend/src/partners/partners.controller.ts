@@ -10,20 +10,26 @@ import {
   Delete,
   Get,
   Param,
+  ParseEnumPipe,
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { UpdatePartnerDto } from './dto/update-partner.dto';
+import { PartnerCategory } from './entities/partner.entity';
 
 @Controller('partners')
 export class PartnersController {
   constructor(private readonly partnersService: PartnersService) {}
 
   @Get()
-  findAll() {
-    return this.partnersService.findAll();
+  findAll(
+    @Query('category', new ParseEnumPipe(PartnerCategory, { optional: true }))
+    category?: PartnerCategory,
+  ) {
+    return this.partnersService.findAll(category);
   }
 
   @Get(':id')

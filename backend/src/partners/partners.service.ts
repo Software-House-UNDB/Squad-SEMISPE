@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreatePartnerDto } from './dto/create-partner.dto';
 import { UpdatePartnerDto } from './dto/update-partner.dto';
-import { Partner } from './entities/partner.entity';
+import { Partner, PartnerCategory } from './entities/partner.entity';
 
 @Injectable()
 export class PartnersService {
@@ -16,8 +16,8 @@ export class PartnersService {
     private readonly partnersRepository: Repository<Partner>,
   ) {}
 
-  findAll(): Promise<Partner[]> {
-    return this.partnersRepository.find();
+  findAll(category?: PartnerCategory): Promise<Partner[]> {
+    return this.partnersRepository.find({ where: { category } });
   }
 
   async findOne(id: number): Promise<Partner> {

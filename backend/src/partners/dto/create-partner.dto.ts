@@ -1,11 +1,13 @@
 import {
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsUrl,
   MaxLength,
 } from 'class-validator';
+import { PartnerCategory } from '../entities/partner.entity';
 
 export class CreatePartnerDto {
   @IsNotEmpty()
@@ -17,6 +19,10 @@ export class CreatePartnerDto {
   @IsNotEmpty()
   @MaxLength(255)
   email: string;
+
+  @IsEnum(PartnerCategory)
+  @IsOptional()
+  category?: PartnerCategory;
 
   @IsUrl()
   @IsOptional()

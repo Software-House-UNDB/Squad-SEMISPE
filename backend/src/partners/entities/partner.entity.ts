@@ -6,6 +6,14 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+export enum PartnerCategory {
+  COMPANY = 'company',
+  STARTUP = 'startup',
+  EDUCATIONAL_INSTITUTION = 'educational_institution',
+  GOVERNMENT = 'government',
+  OTHER = 'other',
+}
+
 @Entity('partners')
 export class Partner {
   @PrimaryGeneratedColumn()
@@ -16,6 +24,13 @@ export class Partner {
 
   @Column({ unique: true })
   email: string;
+
+  @Column({
+    type: 'enum',
+    enum: PartnerCategory,
+    default: PartnerCategory.OTHER,
+  })
+  category: PartnerCategory;
 
   @Column({ type: 'text' })
   description: string;

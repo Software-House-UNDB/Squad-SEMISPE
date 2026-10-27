@@ -224,9 +224,23 @@ Outros exemplos de erro esperados:
 ## Partners
 
 - Todas as rotas `GET` são públicas e não precisam de autenticação.
-- O token é obtido no login (veja seção Auth)
+- O token é obtido no login (veja seção [Auth](#auth)).
 - Funções de escrita referentes ao painel de admin (`POST`, `PATCH` e `DELETE`) requerem token de usuário com role `admin`.
 - Usuário sem token ou token inválido recebe `401`, um usuário que tente uma função de escrita sem role de `admin` recebe `403`.
+
+### Categorias
+
+O campo `category` classifica o parceiro e aceita apenas os valores abaixo.
+É opcional na criação: quando omitido, o parceiro é salvo como `other`.
+Qualquer outro valor retorna `400`.
+
+| Valor | Significado |
+| ----- | ----------- |
+| `company` | Empresa |
+| `startup` | Startup |
+| `educational_institution` | Instituição de ensino |
+| `government` | Órgão público |
+| `other` | Outro |
 
 ### Criar Parceiro
 
@@ -239,6 +253,7 @@ curl -X POST http://localhost:3000/api/partners \
     "email": "contato@empresax.com",
     "description": "Empresa de tecnologia instalada no Parque Tecnológico.",
     "shortDescription": "Tecnologia e inovação",
+    "category": "company",
     "logoUrl": "https://empresax.com/logo.png"
   }'
 ```
@@ -248,6 +263,15 @@ curl -X POST http://localhost:3000/api/partners \
 ```bash
 curl -X GET http://localhost:3000/api/partners
 ```
+
+Para listar apenas uma categoria, use o filtro opcional `category`:
+
+```bash
+curl -X GET "http://localhost:3000/api/partners?category=educational_institution"
+```
+
+Sem o filtro, todos os parceiros são retornados. Uma categoria inexistente
+retorna `400`, e uma categoria sem parceiros retorna uma lista vazia (`[]`).
 
 ### Buscar um Parceiro pelo id
 
@@ -272,7 +296,6 @@ curl -X PATCH http://localhost:3000/api/partners/1 \
 curl -X DELETE http://localhost:3000/api/partners/1 \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..."
 ```
-
 
 ## Spaces
 
@@ -477,7 +500,7 @@ ao finalizar. Ambos exigem `NODE_ENV=development`.
 - Conforme novos módulos forem criados (ver [`pattern.md`](pattern.md)),
   adicione as novas rotas aqui.
 - `name`, `email`, `description` e `shortDescription` são obrigatórios na criação de parceiros,
-  diferentemente do `logoUrl`.
+  diferentemente do `logoUrl` e da `category`.
 - O não preenchimento de campos obrigatórios no `POST` retornará 400.
 - Campo `shortDescription` possui limite de 150 caracteres, serve para descrever o que a parceria
   com aquela empresa traz de benefícios.
