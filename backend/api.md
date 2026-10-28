@@ -240,6 +240,7 @@ Qualquer outro valor retorna `400`.
 | `startup` | Startup |
 | `educational_institution` | Instituição de ensino |
 | `government` | Órgão público |
+| `support_entity` | Entidade de apoio |
 | `other` | Outro |
 
 ### Criar Parceiro
@@ -498,7 +499,7 @@ ao finalizar. Ambos exigem `NODE_ENV=development`.
 ## Notas
 
 - Todas as rotas ficam sob o prefixo `/api` (definido em
-  [main.ts](https://www.google.com/search?q=src/main.ts) via `setGlobalPrefix`).
+  [`main.ts`](src/main.ts) via `setGlobalPrefix`).
 - O corpo de `POST`/`PATCH` é validado pelo `ValidationPipe` global: campos
   fora do respectivo DTO são rejeitados. Na criação, campos obrigatórios
   ausentes retornam `400`.
@@ -518,3 +519,20 @@ ao finalizar. Ambos exigem `NODE_ENV=development`.
   com aquela empresa traz de benefícios.
 - Nenhum dado é obrigatório na edição dos parceiros, no entanto os campos ainda passam pela validação.
 - Tentar cadastrar um email que pertence a outro parceiro retorna `409` no `POST` e `PATCH`
+
+
+### Validação de parceiros
+
+- Campos omitidos no PATCH preservam seus valores.
+- `name`, `email`, `description`, `shortDescription` e `category` não aceitam `null`.
+- `logoUrl` aceita `null` para remover a logomarca; URLs têm limite de 255 caracteres.
+- E-mail duplicado retorna 409 inclusive quando a duplicação ocorre durante a gravação concorrente.
+- A categoria `support_entity` representa Entidades de Apoio; as categorias anteriores permanecem válidas.
+
+### Atualização do banco
+
+Antes de iniciar a versão atualizada em produção, execute `npm run migration:run`.
+As migrations acrescentam a categoria de parceiros e a coluna `spaces.state`,
+com `active` como valor inicial para os espaços existentes.
+Na reversão, parceiros `support_entity` são convertidos para `other` antes de
+remover a categoria. Reverter a migration de espaços remove a coluna e seus valores.
