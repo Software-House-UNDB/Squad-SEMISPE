@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { CreatePartnerDto } from './dto/create-partner.dto';
 import { UpdatePartnerDto } from './dto/update-partner.dto';
 import { Partner, PartnerCategory } from './entities/partner.entity';
@@ -36,7 +36,7 @@ export class PartnersService {
       throw new ConflictException(`Email ${dto.email} already registered`);
     }
     const partner = this.partnersRepository.create(dto);
-    return this.partnersRepository.save(partner);
+    return this.save(partner);
   }
 
   async update(id: number, dto: UpdatePartnerDto): Promise<Partner> {
@@ -52,7 +52,24 @@ export class PartnersService {
         throw new ConflictException(`Email ${dto.email} already registered`);
       }
     }
-    return this.partnersRepository.save(partner);
+    return this.save(partner);
+  }
+
+  private async save(partner: Partner): Promise<Partner> {
+    try {
+      return await this.partnersRepository.save(partner);
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        (error.driverError as { code?: string } | undefined)?.code ===
+          'ER_DUP_ENTRY'
+      ) {
+        throw new ConflictException(
+          'Já existe um parceiro cadastrado com este e-mail.',
+        );
+      }
+      throw error;
+    }
   }
 
   async remove(id: number): Promise<void> {

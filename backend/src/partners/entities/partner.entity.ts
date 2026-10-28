@@ -11,6 +11,7 @@ export enum PartnerCategory {
   STARTUP = 'startup',
   EDUCATIONAL_INSTITUTION = 'educational_institution',
   GOVERNMENT = 'government',
+  SUPPORT_ENTITY = 'support_entity',
   OTHER = 'other',
 }
 

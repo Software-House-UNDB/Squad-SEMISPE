@@ -6,6 +6,7 @@ import {
   IsString,
   IsUrl,
   MaxLength,
+  ValidateIf,
 } from 'class-validator';
 import { PartnerCategory } from '../entities/partner.entity';
 
@@ -20,13 +21,14 @@ export class CreatePartnerDto {
   @MaxLength(255)
   email: string;
 
+  @ValidateIf((_, value: unknown) => value !== undefined)
   @IsEnum(PartnerCategory)
-  @IsOptional()
   category?: PartnerCategory;
 
+  @MaxLength(255)
   @IsUrl()
   @IsOptional()
-  logoUrl?: string;
+  logoUrl?: string | null;
 
   @IsNotEmpty()
   @IsString()
