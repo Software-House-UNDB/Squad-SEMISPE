@@ -90,6 +90,22 @@ nunca a senha ou outros dados pessoais.
 
 ## Users
 
+### Acesso às rotas de usuários
+
+| Método | Rota | Acesso |
+| --- | --- | --- |
+| POST | `/api/users` | Público; novos usuários recebem `user` |
+| GET | `/api/users` | Administrador |
+| GET/PATCH/DELETE | `/api/users/:id` | Próprio usuário ou administrador |
+
+Nas rotas protegidas, envie `Authorization: Bearer TOKEN`.
+Sem token, token inválido/expirado ou conta excluída: `401`.
+Usuário comum tentando listar usuários ou acessar outra conta: `403`.
+O JWT é validado contra o banco a cada requisição; email e papel atuais
+prevalecem sobre os dados antigos do token. Falhas do banco não são tratadas
+como credenciais inválidas. Esta consulta não revoga tokens por troca de senha.
+
+
 Modelo de usuário (`User`):
 
 | Campo         | Obrigatório | Observações                                                        |
@@ -162,19 +178,22 @@ curl -X POST http://localhost:3000/api/users \
 ### Listar usuários
 
 ```bash
-curl -X GET http://localhost:3000/api/users
+curl -X GET http://localhost:3000/api/users \
+  -H "Authorization: Bearer TOKEN"
 ```
 
 ### Buscar usuário por id
 
 ```bash
-curl -X GET http://localhost:3000/api/users/1
+curl -X GET http://localhost:3000/api/users/1 \
+  -H "Authorization: Bearer TOKEN"
 ```
 
 ### Atualizar usuário (parcial)
 
 ```bash
 curl -X PATCH http://localhost:3000/api/users/1 \
+  -H "Authorization: Bearer TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Jane D. Doe"
@@ -184,7 +203,8 @@ curl -X PATCH http://localhost:3000/api/users/1 \
 ### Remover usuário
 
 ```bash
-curl -X DELETE http://localhost:3000/api/users/1
+curl -X DELETE http://localhost:3000/api/users/1 \
+  -H "Authorization: Bearer TOKEN"
 ```
 
 ### Exemplo de validação inválida
@@ -536,3 +556,23 @@ As migrations acrescentam a categoria de parceiros e a coluna `spaces.state`,
 com `active` como valor inicial para os espaços existentes.
 Na reversão, parceiros `support_entity` são convertidos para `other` antes de
 remover a categoria. Reverter a migration de espaços remove a coluna e seus valores.
+
+### Limite de tentativas de login
+
+`POST /api/auth/login` aceita cinco requisições por minuto por IP, incluindo
+requisições inválidas e logins bem-sucedidos. Ao exceder, retorna `429` com
+`Retry-After` indicando a espera em segundos. O contador fica em memória por
+instância e é reiniciado com o processo. Para várias instâncias, usar armazenamento
+compartilhado. Atrás de proxy, configurar apenas os proxies confiáveis antes de
+usar o IP encaminhado. Referência: https://docs.nestjs.com/security/rate-limiting
+
+### Validações de usuários e implantação
+
+- Nome é aparado, obrigatório e limitado a 150 caracteres; email é normalizado e limitado a 255.
+- Senha tem no mínimo oito caracteres e no máximo 72 bytes em UTF-8 (limite do bcrypt).
+- No PATCH, `name`, `email` e `password` rejeitam `null`; campos omitidos são preservados.
+- `institution`, `cpf`, `cnpj` e `phone` aceitam `null` para limpar dados opcionais.
+- `CreateUsers1793199600000` cria a tabela com índices únicos de email, CPF e CNPJ.
+- Aplicar migrations antes de iniciar a API em produção, com sincronização automática desativada.
+- Bancos locais criados por `synchronize` precisam de alinhamento de histórico/schema antes de executar as migrations iniciais; não execute sobre tabelas existentes sem esse alinhamento.
+- Reverter `CreateUsers` apaga a tabela e seus registros; não reverter em banco com dados que devam ser preservados.

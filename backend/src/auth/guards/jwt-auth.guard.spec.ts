@@ -10,6 +10,8 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import * as request from 'supertest';
 import { Role } from '../../users/entities/user.entity';
+import { UsersService } from '../../users/users.service';
+import { NotFoundException } from '@nestjs/common';
 import { JwtStrategy } from '../strategies/jwt.strategy';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
@@ -44,6 +46,20 @@ describe('JwtAuthGuard (integração via HTTP)', () => {
       controllers: [ProtectedTestController],
       providers: [
         JwtStrategy,
+        {
+          provide: UsersService,
+          useValue: {
+            findOne: jest.fn().mockImplementation((id: number) => {
+              if (id === 7)
+                return Promise.resolve({
+                  id: 7,
+                  email: 'valid@example.com',
+                  role: Role.ADMIN,
+                });
+              throw new NotFoundException();
+            }),
+          },
+        },
         {
           provide: ConfigService,
           useValue: {
