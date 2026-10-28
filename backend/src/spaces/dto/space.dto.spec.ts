@@ -1,4 +1,5 @@
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { SpaceState } from '../entities/space.entity';
 import { CreateSpaceDto } from './create-space.dto';
 import { UpdateSpaceDto } from './update-space.dto';
 
@@ -32,6 +33,7 @@ describe('Space DTOs (ValidationPipe)', () => {
       capacity: 60,
       photoUrls: [' https://example.com/miniauditorio.jpg '],
       equipment: [' Projetor ', 'Microfone'],
+      state: SpaceState.INACTIVE,
     });
 
     expect(result).toEqual({
@@ -39,6 +41,7 @@ describe('Space DTOs (ValidationPipe)', () => {
       description: 'Espaço para apresentações.',
       photoUrls: ['https://example.com/miniauditorio.jpg'],
       equipment: ['Projetor', 'Microfone'],
+      state: SpaceState.INACTIVE,
     });
   });
 
@@ -77,6 +80,8 @@ describe('Space DTOs (ValidationPipe)', () => {
       { ...requiredFields, photoUrls: ['file:///tmp/foto.jpg'] },
     ],
     ['foto numérica', { ...requiredFields, photoUrls: [123] }],
+    ['status inválido', { ...requiredFields, state: 'manutencao' }],
+    ['status numérico', { ...requiredFields, state: 123 }],
   ])('rejeita %s no cadastro', async (_, payload) => {
     await expect(create(payload)).rejects.toBeInstanceOf(BadRequestException);
   });
@@ -92,6 +97,9 @@ describe('Space DTOs (ValidationPipe)', () => {
 
   it('aceita atualização parcial preservando a ausência dos outros campos', async () => {
     expect(await update({ capacity: 80 })).toEqual({ capacity: 80 });
+    expect(await update({ state: SpaceState.INACTIVE })).toEqual({ 
+      state: SpaceState.INACTIVE,
+    });
   });
 
   it('aceita listas vazias para limpar equipamentos e fotos', async () => {
@@ -104,7 +112,7 @@ describe('Space DTOs (ValidationPipe)', () => {
     expect(await update(lists)).toEqual(lists);
   });
 
-  it.each(['name', 'capacity', 'equipment', 'photoUrls'])(
+  it.each(['name', 'capacity', 'equipment', 'photoUrls', 'state'])(
     'rejeita null em %s tanto no cadastro quanto na edição',
     async (field) => {
       await expect(
@@ -127,6 +135,9 @@ describe('Space DTOs (ValidationPipe)', () => {
     await expect(update({ equipment: ['   '] })).rejects.toBeInstanceOf(
       BadRequestException,
     );
+    await expect(update({ state: 'invalido' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    )
     await expect(update({ id: 1 })).rejects.toBeInstanceOf(BadRequestException);
   });
 
@@ -145,6 +156,7 @@ describe('Space DTOs (ValidationPipe)', () => {
       'O nome de cada equipamento não pode ficar vazio.',
     ],
     [{ description: 123 }, 'A descrição deve ser um texto.'],
+    [{ state: 'invalido' }, 'O status deve ser ativo ou inativo.'],
   ])('retorna a mensagem em português para %j', async (payload, message) => {
     const response = {
       statusCode: 400,

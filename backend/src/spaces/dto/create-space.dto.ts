@@ -1,6 +1,8 @@
 import { Transform } from 'class-transformer';
+import { SpaceState } from '../entities/space.entity';
 import {
   IsArray,
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -71,4 +73,10 @@ export class CreateSpaceDto {
     message: 'O nome de cada equipamento não pode ficar vazio.',
   })
   equipment?: string[];
+
+  @ValidateIf((_, value: unknown) => value !== undefined)
+  @IsEnum(SpaceState, {
+    message: 'O status deve ser ativo ou inativo.',
+  })
+  state?: SpaceState;
 }
