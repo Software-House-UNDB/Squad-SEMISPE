@@ -7,6 +7,7 @@ import configuration from './config/configuration';
 import { DatabaseModule } from './database/database.module';
 import { SpacesModule } from './spaces/spaces.module';
 import { UsersModule } from './users/users.module';
+import { PartnersModule } from './partners/partners.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UsersModule } from './users/users.module';
     DatabaseModule,
     UsersModule,
     AuthModule,
+    PartnersModule,
     SpacesModule,
   ],
   controllers: [AppController],

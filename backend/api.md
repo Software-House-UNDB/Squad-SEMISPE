@@ -220,6 +220,83 @@ Outros exemplos de erro esperados:
   (`property role should not exist`).
 - Usuário inexistente em `GET/PATCH/DELETE /users/:id` → `404 Not Found`.
 
+
+## Partners
+
+- Todas as rotas `GET` são públicas e não precisam de autenticação.
+- O token é obtido no login (veja seção [Auth](#auth)).
+- Funções de escrita referentes ao painel de admin (`POST`, `PATCH` e `DELETE`) requerem token de usuário com role `admin`.
+- Usuário sem token ou token inválido recebe `401`, um usuário que tente uma função de escrita sem role de `admin` recebe `403`.
+
+### Categorias
+
+O campo `category` classifica o parceiro e aceita apenas os valores abaixo.
+É opcional na criação: quando omitido, o parceiro é salvo como `other`.
+Qualquer outro valor retorna `400`.
+
+| Valor | Significado |
+| ----- | ----------- |
+| `company` | Empresa |
+| `startup` | Startup |
+| `educational_institution` | Instituição de ensino |
+| `government` | Órgão público |
+| `other` | Outro |
+
+### Criar Parceiro
+
+```bash
+curl -X POST http://localhost:3000/api/partners \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..." \
+  -d '{
+    "name": "Empresa X",
+    "email": "contato@empresax.com",
+    "description": "Empresa de tecnologia instalada no Parque Tecnológico.",
+    "shortDescription": "Tecnologia e inovação",
+    "category": "company",
+    "logoUrl": "https://empresax.com/logo.png"
+  }'
+```
+
+### Listar Parceiros
+
+```bash
+curl -X GET http://localhost:3000/api/partners
+```
+
+Para listar apenas uma categoria, use o filtro opcional `category`:
+
+```bash
+curl -X GET "http://localhost:3000/api/partners?category=educational_institution"
+```
+
+Sem o filtro, todos os parceiros são retornados. Uma categoria inexistente
+retorna `400`, e uma categoria sem parceiros retorna uma lista vazia (`[]`).
+
+### Buscar um Parceiro pelo id
+
+```bash
+curl -X GET http://localhost:3000/api/partners/1
+```
+
+### Atualizar um Parceiro (parcial)
+
+```bash
+curl -X PATCH http://localhost:3000/api/partners/1 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..." \
+  -d '{
+    "logoUrl": "http://empresay.com/logo.png"
+  }'
+```
+
+### Remover um parceiro
+
+```bash
+curl -X DELETE http://localhost:3000/api/partners/1 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..."
+```
+
 ## Spaces
 
 Cadastro dos espaços físicos do Parque Tecnológico. A solicitação de reservas
@@ -422,3 +499,10 @@ ao finalizar. Ambos exigem `NODE_ENV=development`.
 - Substitua o `1` no path de `:id` pelo id real retornado no `POST`.
 - Conforme novos módulos forem criados (ver [`pattern.md`](pattern.md)),
   adicione as novas rotas aqui.
+- `name`, `email`, `description` e `shortDescription` são obrigatórios na criação de parceiros,
+  diferentemente do `logoUrl` e da `category`.
+- O não preenchimento de campos obrigatórios no `POST` retornará 400.
+- Campo `shortDescription` possui limite de 150 caracteres, serve para descrever o que a parceria
+  com aquela empresa traz de benefícios.
+- Nenhum dado é obrigatório na edição dos parceiros, no entanto os campos ainda passam pela validação.
+- Tentar cadastrar um email que pertence a outro parceiro retorna `409` no `POST` e `PATCH`
