@@ -95,7 +95,15 @@ describe('SpacesController (HTTP, validação e permissões)', () => {
       .overrideProvider(getRepositoryToken(Space))
       .useValue({})
       .overrideProvider(getRepositoryToken(User))
-      .useValue({})
+      .useValue({
+        findOneBy: jest.fn().mockImplementation(({ id }: { id: number }) =>
+          Promise.resolve({
+            id,
+            email: id === 1 ? 'admin@example.com' : 'user@example.com',
+            role: id === 1 ? Role.ADMIN : Role.USER,
+          }),
+        ),
+      })
       .overrideProvider(SpacesService)
       .useValue(service)
       .compile();
