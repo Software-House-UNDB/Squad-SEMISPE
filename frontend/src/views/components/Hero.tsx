@@ -4,26 +4,28 @@ import graphicTriangulos from '../../assets/graphics/graphic-brand-triangles.svg
 import shapeTopografico from '../../assets/graphics/shape-hero-topographic-lines.svg';
 import { Button } from './ui/Button';
 import { SectionPill } from './ui/SectionPill';
+import { type NavItem } from '../../models/navigation.model';
 
 export interface HeroProps {
   onReservaClick?: () => void;
-  /** Rótulo da seção, exibido na pílula de abertura */
-  sectionLabel?: string;
+  /** Seção representada (rótulo e cor de identidade da pílula de abertura) */
+  section?: NavItem;
 }
 
-export function Hero({ onReservaClick, sectionLabel }: HeroProps) {
+export function Hero({ onReservaClick, section }: HeroProps) {
   return (
     <section
       id="quem-somos"
       className="relative scroll-mt-16 overflow-hidden bg-gradient-to-b from-[#033165] via-[#1f71b7] to-[#008ecb] text-semispe-light pt-8 pb-16 lg:pt-14 lg:pb-24"
     >
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Título Principal — entra de baixo com fadeInUp */}
         <div className="relative z-10 mb-10 lg:mb-14">
-          {sectionLabel && (
+          {section && (
             <SectionPill
-              label={sectionLabel}
+              label={section.label}
+              accent={section.accent}
               className="mb-5"
               style={{ animation: 'fadeInUp 0.6s ease-out both' }}
             />

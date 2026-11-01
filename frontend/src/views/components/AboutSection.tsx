@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { Play, Pause } from 'lucide-react';
 import videoLogo from '../../assets/brand/logo-com-movimento.mp4';
 import { type AboutSectionData } from '../../models/about.model';
+import { type NavItem } from '../../models/navigation.model';
 import { SectionPill } from './ui/SectionPill';
 
 export interface AboutSectionProps {
   data: AboutSectionData;
-  /** Rótulo da seção, exibido na pílula de abertura */
-  sectionLabel?: string;
+  /** Seção representada (rótulo e cor de identidade da pílula de abertura) */
+  section?: NavItem;
 }
 
 /**
@@ -65,7 +66,7 @@ function MetricCard({
   return (
     <div
       ref={ref}
-      className={`bg-white/10 backdrop-blur-md p-3.5 sm:p-4 rounded-xl border border-white/20 shadow-lg shadow-black/10 hover:bg-white/15 hover:shadow-xl hover:shadow-black/25 hover:border-semispe-yellow/60 hover:-translate-y-1.5 transition-all duration-300 ease-out flex flex-col justify-between group cursor-default relative overflow-hidden ${gridPlacement} ${
+      className={`bg-black/15 backdrop-blur-md p-3.5 sm:p-4 rounded-xl border border-white/20 shadow-lg shadow-black/10 hover:bg-black/20 hover:shadow-xl hover:shadow-black/25 hover:border-semispe-yellow/60 hover:-translate-y-1.5 transition-all duration-300 ease-out flex flex-col justify-between group cursor-default relative overflow-hidden ${gridPlacement} ${
         index === 4 ? 'sm:col-span-2 lg:col-span-2' : ''
       }`}
       style={{
@@ -87,7 +88,7 @@ function MetricCard({
         </h3>
 
         {description && (
-          <p className="text-[11px] text-white/70 mt-0.5 leading-snug">
+          <p className="text-[11px] text-white/90 mt-0.5 leading-snug">
             {description}
           </p>
         )}
@@ -96,7 +97,7 @@ function MetricCard({
   );
 }
 
-export function AboutSection({ data, sectionLabel }: AboutSectionProps) {
+export function AboutSection({ data, section }: AboutSectionProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [hasUserToggled, setHasUserToggled] = useState<boolean>(false);
@@ -184,7 +185,7 @@ export function AboutSection({ data, sectionLabel }: AboutSectionProps) {
   return (
     <section
       id="indicadores"
-      className="relative scroll-mt-16 py-16 lg:py-24 bg-gradient-to-b from-[#008ecb] via-[#1f71b7] to-[#033165] text-semispe-light overflow-hidden"
+      className="relative scroll-mt-16 py-16 lg:py-24 bg-gradient-to-b from-semispe-teal to-semispe-teal-deep text-semispe-light overflow-hidden"
       aria-label="Sobre o Parque Tecnológico de São Luís - Resultados"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -246,12 +247,12 @@ export function AboutSection({ data, sectionLabel }: AboutSectionProps) {
             
             {/* Título da Seção */}
             <div className="mb-4">
-              {sectionLabel && <SectionPill label={sectionLabel} className="mb-3" />}
+              {section && <SectionPill label={section.label} accent={section.accent} className="mb-3" />}
               <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
                 {data.resultsTitle ?? 'Resultados'}
               </h2>
               {data.resultsSubtitle && (
-                <p className="text-xs sm:text-sm text-white/80 mt-1 font-medium">
+                <p className="text-xs sm:text-sm text-white/90 mt-1 font-medium">
                   {data.resultsSubtitle}
                 </p>
               )}

@@ -12,12 +12,14 @@
   --color-semispe-blue: #1f71b7;         /* Azul Principal do Logotipo */
   --color-semispe-blue-dark: #033165;    /* Azul Escuro (Post / Fundo Institucional) */
   --color-semispe-teal: #22755e;         /* Verde Petróleo */
+  --color-semispe-teal-deep: #134d3e;    /* Verde Petróleo escuro (base do degradê de Indicadores) */
   --color-semispe-green-light: #92bf71;  /* Verde Claro */
   --color-semispe-green-dark: #216700;   /* Verde Escuro */
   --color-semispe-green-olive: #8ea700;  /* Verde Oliva */
 
   /* Cores de Interface do Sistema */
   --color-semispe-header: #efefef;       /* Aplicação em Fundo Claro */
+  --color-semispe-surface: #f3f5f1;      /* Fundo das seções claras (Galeria, Parceiros) */
   --color-semispe-light: #ffffff;
   --color-semispe-dark: #033165;
 }
@@ -115,6 +117,12 @@
 @keyframes countReveal {
   from { opacity: 0; transform: translateY(12px) scale(0.95); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Tempo até o próximo slide no indicador ativo do carrossel */
+@keyframes galleryProgress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
 }
 
 /* ─── Classes Utilitárias de Animação ─────────────────────────────────────── */

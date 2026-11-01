@@ -2,6 +2,7 @@
 import { Menu, X } from 'lucide-react';
 import logoParque from '../../assets/brand/logo-parque-tecnologico.png';
 import type { NavItem } from '../../models/navigation.model';
+import { BrandStripe } from './ui/BrandStripe';
 
 export interface NavbarProps {
   navItems: readonly NavItem[];
@@ -14,6 +15,9 @@ export interface NavbarProps {
   isHidden?: boolean;
 }
 
+/** Cada link usa a cor de identidade da sua seção (variável CSS `--accent`) */
+const accentStyle = (item: NavItem) => ({ '--accent': item.accent.onDark }) as React.CSSProperties;
+
 export function Navbar({
   navItems,
   activeSection,
@@ -25,13 +29,13 @@ export function Navbar({
   return (
     <header
       inert={isHidden}
-      className={`sticky top-0 z-50 w-full bg-[#021f42]/85 backdrop-blur-md text-white border-b border-white/10 shadow-lg shadow-black/10 transition-transform duration-300 ease-out motion-reduce:transition-none ${
+      className={`sticky top-0 z-50 w-full bg-[#021f42]/85 backdrop-blur-md text-white shadow-lg shadow-black/10 transition-transform duration-300 ease-out motion-reduce:transition-none ${
         isHidden ? '-translate-y-full' : 'translate-y-0'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          
+
           {/* Logo Oficial do Parque Tecnológico */}
           <a
             href="#quem-somos"
@@ -72,10 +76,11 @@ export function Navbar({
                     e.preventDefault();
                     onNavItemClick(item.href, item.id);
                   }}
+                  style={accentStyle(item)}
                   className={`text-xs font-black tracking-wider uppercase transition-colors duration-200 py-1 border-b-2 ${
                     isActive
-                      ? 'text-semispe-yellow border-semispe-yellow'
-                      : 'text-white/75 hover:text-semispe-yellow border-transparent hover:border-semispe-yellow/50'
+                      ? 'text-(--accent) border-(--accent)'
+                      : 'text-white/75 hover:text-(--accent) border-transparent hover:border-(--accent)/50'
                   }`}
                 >
                   {item.label}
@@ -100,7 +105,7 @@ export function Navbar({
         </div>
       </div>
 
-      {/* Menu Mobile Dropdown 
+      {/* Menu Mobile Dropdown
         dar mais atenção nisso depois
       */}
       {isMobileMenuOpen && (
@@ -113,15 +118,20 @@ export function Navbar({
                 e.preventDefault();
                 onNavItemClick(item.href, item.id);
               }}
-              className={`block px-3 py-2 rounded-md text-sm font-black uppercase hover:bg-white/10 ${
-                activeSection === item.id ? 'text-semispe-yellow' : 'text-white/85 hover:text-semispe-yellow'
+              style={accentStyle(item)}
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-black uppercase hover:bg-white/10 ${
+                activeSection === item.id ? 'text-(--accent)' : 'text-white/85 hover:text-(--accent)'
               }`}
             >
+              <span className="w-1.5 h-1.5 rounded-full bg-(--accent)" aria-hidden="true" />
               {item.label}
             </a>
           ))}
         </div>
       )}
+
+      {/* Faixa com as cores do logotipo no lugar da borda inferior */}
+      <BrandStripe className="opacity-80" />
     </header>
   );
 }

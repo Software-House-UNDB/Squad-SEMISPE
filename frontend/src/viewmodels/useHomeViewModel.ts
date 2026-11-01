@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { MAIN_NAV_ITEMS, TREE_ROOT_SECTION_IDS, type NavItem } from '../models/navigation.model';
 import { type AboutSectionData } from '../models/about.model';
+import { type EventHighlight } from '../models/event.model';
+import { BRAND_ACCENTS } from '../models/brand.model';
 
 export const DEFAULT_ABOUT_DATA: AboutSectionData = {
   badge: 'ECOSSISTEMA DE INOVAÇÃO',
@@ -51,10 +53,49 @@ export const DEFAULT_ABOUT_DATA: AboutSectionData = {
   ]
 };
 
+// Conteúdo provisório: substituir pelas fotos e pela agenda real dos eventos do Parque
+export const DEFAULT_EVENT_HIGHLIGHTS: EventHighlight[] = [
+  {
+    id: 'evento-hackathon',
+    title: 'Hackathon de Soluções Urbanas',
+    date: 'XX/XX/2026',
+    category: 'Hackathon',
+    accent: BRAND_ACCENTS.azul,
+  },
+  {
+    id: 'evento-meetup',
+    title: 'Meetup do Ecossistema de Startups',
+    date: 'XX/XX/2026',
+    category: 'Meetup',
+    accent: BRAND_ACCENTS.verde,
+  },
+  {
+    id: 'evento-workshop',
+    title: 'Workshop de Inovação Aberta',
+    date: 'XX/XX/2026',
+    category: 'Workshop',
+    accent: BRAND_ACCENTS.amarelo,
+  },
+  {
+    id: 'evento-palestra',
+    title: 'Ciclo de Palestras Tecnologia e Cidade',
+    date: 'XX/XX/2026',
+    category: 'Palestra',
+    accent: BRAND_ACCENTS.verdePetroleo,
+  },
+  {
+    id: 'evento-demo-day',
+    title: 'Demo Day das Startups Incubadas',
+    date: 'XX/XX/2026',
+    category: 'Demo Day',
+    accent: BRAND_ACCENTS.verdeOliva,
+  },
+];
+
 const TREE_BRANCH_ITEMS = MAIN_NAV_ITEMS.filter((item) => !TREE_ROOT_SECTION_IDS.includes(item.id));
-/** Rótulo de cada seção por id, para as pílulas de abertura das seções */
-const SECTION_LABELS: Readonly<Record<string, string>> = Object.fromEntries(
-  MAIN_NAV_ITEMS.map((item) => [item.id, item.label])
+/** Cada seção por id, para as pílulas de abertura (rótulo e cor de identidade) */
+const SECTIONS: Readonly<Record<string, NavItem>> = Object.fromEntries(
+  MAIN_NAV_ITEMS.map((item) => [item.id, item])
 );
 const TREE_ROOT_ITEMS = MAIN_NAV_ITEMS.filter((item) => TREE_ROOT_SECTION_IDS.includes(item.id));
 
@@ -70,9 +111,11 @@ export interface HomeViewModel {
   treeBranches: readonly NavItem[];
   /** Seções exibidas como raízes da árvore da introdução */
   treeRoots: readonly NavItem[];
-  /** Rótulo de cada seção por id (o mesmo texto dos galhos/raízes e do menu) */
-  sectionLabels: Readonly<Record<string, string>>;
+  /** Cada seção por id (o mesmo rótulo e cor dos galhos/raízes e do menu) */
+  sections: Readonly<Record<string, NavItem>>;
   aboutData: AboutSectionData;
+  /** Slides do carrossel de eventos */
+  eventHighlights: readonly EventHighlight[];
   activeSection: string;
   isMobileMenuOpen: boolean;
   /** Verdadeiro enquanto a introdução (árvore) ocupa a tela e a navbar fica recolhida */
@@ -149,8 +192,9 @@ export function useHomeViewModel(): HomeViewModel {
     navItems: MAIN_NAV_ITEMS,
     treeBranches: TREE_BRANCH_ITEMS,
     treeRoots: TREE_ROOT_ITEMS,
-    sectionLabels: SECTION_LABELS,
+    sections: SECTIONS,
     aboutData: DEFAULT_ABOUT_DATA,
+    eventHighlights: DEFAULT_EVENT_HIGHLIGHTS,
     activeSection,
     isMobileMenuOpen,
     isNavbarHidden,
