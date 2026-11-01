@@ -5,10 +5,14 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import Lenis from 'lenis';
 import { TreeParticleCanvas } from './TreeParticleCanvas';
+import { StardustCanvas } from './StardustCanvas';
 import { type NavItem } from '../../models/navigation.model';
 
 // Registro oficial do plugin ScrollTrigger no ecossistema GSAP
 gsap.registerPlugin(ScrollTrigger);
+
+/** Rolagem, em fração da altura da tela, até a poeira de fundo sumir de vez */
+const DUST_FADE_DISTANCE = 0.6;
 
 export interface IntroSectionProps {
   /** Callback opcional acionado ao clicar para avançar até a Hero */
@@ -32,11 +36,12 @@ export function IntroSection({
 }: IntroSectionProps) {
   const containerRef = useRef<HTMLElement | null>(null);
   const particleProgressRef = useRef<number>(1.0); // Árvore totalmente crescida
+  const dustAmountRef = useRef<number>(1.0); // Poeira de fundo inteira; o scroll vai reduzindo
   const textIndicatorRef = useRef<HTMLDivElement | null>(null);
   const brandTitleRef = useRef<HTMLDivElement | null>(null);
   const lenisRef = useRef<Lenis | null>(null);
 
-  // 1. Lenis Smooth Scroll Engine: Rolagem macia e aveludada contínua no desktop e mobile
+  
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia(
       '(prefers-reduced-motion: reduce)'
@@ -104,7 +109,7 @@ export function IntroSection({
 
       const mm = gsap.matchMedia();
 
-      // ── DESKTOP (>= 1024px com ponteiro fino): Entrada Autônoma do Enxame + Pinning Suave no Scroll ──
+      // ── DESKTOP (>= 1024px com ponteiro fino): Entrada Autônoma do Enxame ──
       mm.add('(min-width: 1024px) and (pointer: fine)', () => {
         const stateObj = { p: 0.0 };
 
@@ -125,33 +130,9 @@ export function IntroSection({
             { opacity: 1, y: 0, duration: 1.0, delay: 0.8, ease: 'power2.out' }
           );
         }
-
-        // 2. ScrollTrigger com Pinning suave para acompanhar a jornada
-        const scrollTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: 'top top',
-            end: '+=120%',
-            pin: true,
-            scrub: 1.6,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-            fastScrollEnd: true,
-          },
-        });
-
-        // Conforme rola, o indicador de scroll desvanece suavemente
-        if (textIndicatorRef.current) {
-          scrollTl.to(textIndicatorRef.current, {
-            opacity: 0,
-            y: 20,
-            ease: 'power1.in',
-            duration: 0.6,
-          }, 0);
-        }
       });
 
-      // ── MOBILE & TOUCH: Sem Pinning, Aglutinação Fluida Direta ──
+      // ── MOBILE & TOUCH: Aglutinação Fluida Direta ──
       mm.add('(max-width: 1023px), (pointer: coarse)', () => {
         const stateObj = { p: 0.0 };
         gsap.to(stateObj, {
@@ -171,17 +152,53 @@ export function IntroSection({
           );
         }
       });
+
+      
+      // desvanece e a poeira de fundo vai sumindo; subindo, os dois voltam
+      const scrollTl = gsap.timeline({
+        scrollTrigger: {
+          start: 0,
+          end: () => window.innerHeight * DUST_FADE_DISTANCE,
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      if (textIndicatorRef.current) {
+        scrollTl.to(textIndicatorRef.current, {
+          opacity: 0,
+          y: 20,
+          ease: 'power1.in',
+          duration: 0.4,
+        }, 0);
+      }
+
+      // Cai mais rápido no começo, para a diferença aparecer logo na primeira rolada
+      const dust = { amount: 1.0 };
+      scrollTl.to(dust, {
+        amount: 0,
+        ease: 'power1.out',
+        duration: 1,
+        onUpdate: () => {
+          dustAmountRef.current = dust.amount;
+        },
+      }, 0);
     },
     { scope: containerRef }
   );
 
+  // A introdução ocupa a tela abaixo da navbar (h-16 + faixa de 2px = 66px): assim o
+  // indicador de scroll fica visível ao abrir a página e o resto vai para a árvore
   return (
     <section
       ref={containerRef}
       id="intro"
-      className="h-screen w-full relative overflow-hidden bg-gradient-to-b from-[#021f42] via-[#022854] to-[#033165] text-white flex flex-col items-center justify-between z-20 select-none"
+      className="h-[calc(100svh-66px)] w-full relative overflow-hidden bg-gradient-to-b from-[#021f42] via-[#022854] to-[#033165] text-white flex flex-col items-center justify-between z-20 select-none"
       aria-label="Introdução Interativa do Parque Tecnológico de São Luís em Partículas 3D"
     >
+      {/* Poeira espacial em segundo plano, ocupando a tela inteira */}
+      <StardustCanvas amountRef={dustAmountRef} className="absolute inset-0 w-full h-full" />
+
       {/* Halo radial luminescente de profundidade sob o enxame de partículas */}
       <div
         className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-35"
@@ -190,11 +207,16 @@ export function IntroSection({
         <div className="w-[620px] h-[620px] rounded-full bg-radial from-white/20 via-[#1f71b7]/15 to-transparent blur-3xl transform scale-110" />
       </div>
 
-      <div className="w-full h-8 sm:h-12 pointer-events-none" aria-hidden="true" />
+      <div className="w-full h-2 sm:h-3 pointer-events-none" aria-hidden="true" />
 
-      {/* Container Central com o Canvas de Partículas 3D em WebGL */}
-      <div className="relative flex flex-col items-center justify-center z-10 px-4 w-full max-w-4xl mx-auto my-auto">
-        <div className="relative w-full h-[clamp(400px,62vh,640px)] flex items-center justify-center">
+      {/* Container Central com o Canvas de Partículas 3D em WebGL: o canvas fica
+          com toda a altura que sobra entre o topo, o título e o indicador, e com
+          a largura toda da tela para as pílulas caberem ao lado da copa (o tamanho
+          da árvore só depende da altura). No celular a árvore é limitada pela
+          largura, então a altura para em 125vw para não sobrar vão entre as raízes
+          e o título */}
+      <div className="relative flex flex-col items-center justify-center z-10 px-0 sm:px-4 w-full flex-1 min-h-0">
+        <div className="relative w-full flex-1 min-h-[340px] max-sm:max-h-[125vw] flex items-center justify-center">
           <TreeParticleCanvas
             progressRef={particleProgressRef}
             repulsionStrength={1.2}
@@ -205,10 +227,11 @@ export function IntroSection({
           />
         </div>
 
-        {/* Tipografia da Marca revelada de forma sincronizada */}
+        {/* Tipografia da Marca revelada de forma sincronizada; sobe um pouco sobre a
+            base do canvas, onde só restam as ondas do solo */}
         <div
           ref={brandTitleRef}
-          className="mt-3 text-center space-y-1.5 transition-opacity"
+          className="relative -mt-6 text-center space-y-1.5 transition-opacity"
         >
           <p className="text-xs sm:text-sm font-semibold tracking-[0.25em] uppercase text-white/75">
             Parque Tecnológico de
@@ -225,7 +248,7 @@ export function IntroSection({
       {/* Indicador Acessível "Role para baixo para explorar" */}
       <div
         ref={textIndicatorRef}
-        className="w-full pb-8 sm:pb-12 flex flex-col items-center justify-center z-10"
+        className="w-full pb-3 sm:pb-5 flex flex-col items-center justify-center z-10"
       >
         <button
           type="button"

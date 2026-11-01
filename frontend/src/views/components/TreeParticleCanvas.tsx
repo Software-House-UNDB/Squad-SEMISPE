@@ -31,6 +31,30 @@ const PAINT_RADIUS = 1.7;
 const MAX_GROUPS = 12;
 const HIGHLIGHT_COLOR = '#ffdf00'; // semispe-yellow
 
+interface LabelSlot {
+  x: number;
+  y: number;
+}
+
+/**
+ * Em telas largas as pílulas não seguem as pontas dos galhos (assimétricas e em
+ * movimento com o giro da árvore): ficam paradas em pares espelhados, na mesma
+ * altura, logo fora do contorno da copa e das raízes já contando o vai-e-vem.
+ * Unidades do mundo no plano z = 0, de fora para dentro em cada lado; `x` é o
+ * ponto de onde a pílula cresce para fora.
+ */
+const WIDE_BRANCH_SLOTS: readonly LabelSlot[] = [
+  { x: 6.4, y: 0.6 },
+  { x: 4.9, y: 4.5 },
+];
+const WIDE_ROOT_SLOTS: readonly LabelSlot[] = [{ x: 3.2, y: -4.1 }];
+
+/** Posição espelhada do rótulo `i` (da esquerda para a direita) entre `count`, ou null se não houver */
+function mirroredSlot(slots: readonly LabelSlot[], i: number, count: number) {
+  const slot = count % 2 === 0 ? slots[Math.min(i, count - 1 - i)] : undefined;
+  return slot ? new THREE.Vector3(i < count / 2 ? -slot.x : slot.x, slot.y, 0) : null;
+}
+
 const labelBaseClass =
   'absolute top-0 left-0 opacity-0 will-change-transform flex items-center gap-2 whitespace-nowrap rounded-full border backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-bold tracking-widest uppercase text-white shadow-lg shadow-black/20 transition-colors duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-semispe-yellow group border-white/20 bg-white/10 hover:border-semispe-yellow hover:bg-semispe-yellow/15 focus-visible:border-semispe-yellow focus-visible:bg-semispe-yellow/15';
 
@@ -304,14 +328,23 @@ export function TreeParticleCanvas({
     let viewWidth = 0;
     let viewHeight = 0;
 
+    const branchSlots = tree.branchAnchors.map((_, i) => mirroredSlot(WIDE_BRANCH_SLOTS, i, branchCount));
+    const rootSlots = tree.rootAnchors.map((_, i) => mirroredSlot(WIDE_ROOT_SLOTS, i, rootCount));
+    const hasSlots = [...branchSlots, ...rootSlots].every((slot) => slot !== null);
+    let useSlots = false;
+
+    /** `followTree`: a âncora gira junto com a árvore; sem ele, fica parada na tela */
     const placeLabel = (
       el: HTMLButtonElement | null,
       anchor: THREE.Vector3,
       side: 'left' | 'right' | 'above' | 'below',
-      opacity: number
+      opacity: number,
+      followTree = true
     ) => {
       if (!el) return;
-      projected.copy(anchor).applyMatrix4(particleSystem.matrixWorld).project(camera);
+      projected.copy(anchor);
+      if (followTree) projected.applyMatrix4(particleSystem.matrixWorld);
+      projected.project(camera);
       const x = (projected.x * 0.5 + 0.5) * viewWidth;
       const y = (-projected.y * 0.5 + 0.5) * viewHeight;
       const w = el.offsetWidth;
@@ -339,12 +372,18 @@ export function TreeParticleCanvas({
       const rootOpacity = THREE.MathUtils.smoothstep(pVal, 0.35, 0.6);
 
       tree.branchAnchors.forEach((anchor, i) => {
+        const el = branchLabelRefs.current[i];
+        const slot = useSlots ? branchSlots[i] : null;
+        if (slot) return placeLabel(el, slot, slot.x < 0 ? 'left' : 'right', branchOpacity, false);
         const side = anchor.x < -0.8 ? 'left' : anchor.x > 0.8 ? 'right' : 'above';
-        placeLabel(branchLabelRefs.current[i], anchor, side, branchOpacity);
+        placeLabel(el, anchor, side, branchOpacity);
       });
       tree.rootAnchors.forEach((anchor, i) => {
+        const el = rootLabelRefs.current[i];
+        const slot = useSlots ? rootSlots[i] : null;
+        if (slot) return placeLabel(el, slot, slot.x < 0 ? 'left' : 'right', rootOpacity, false);
         const side = anchor.x < -0.3 ? 'left' : anchor.x > 0.3 ? 'right' : 'below';
-        placeLabel(rootLabelRefs.current[i], anchor, side, rootOpacity);
+        placeLabel(el, anchor, side, rootOpacity);
       });
     };
 
@@ -358,12 +397,25 @@ export function TreeParticleCanvas({
       viewWidth = w;
       viewHeight = h;
 
-      // Em telas estreitas a câmera recua para a copa caber inteira
-      const distance = Math.min(13.5 * Math.max(1, 1.15 / aspect), 24);
+      // Em telas estreitas (canvas mais alto que largo) a câmera recua só o
+      // necessário para a copa caber de borda a borda
+      const distance = Math.min(13.5 * Math.max(1, 1 / aspect), 24);
       camera.aspect = aspect;
       camera.position.set(0, 1.3, distance);
       camera.lookAt(0, 0.4, 0);
       camera.updateProjectionMatrix();
+      camera.updateMatrixWorld();
+
+      // Posições fixas só quando a pílula mais larga cabe inteira ao lado do galho
+      // de fora; em telas estreitas (celular) os rótulos seguem as pontas dos galhos
+      useSlots = false;
+      const outerSlot = branchSlots[0];
+      if (hasSlots && outerSlot) {
+        const widest = Math.max(...branchLabelRefs.current.map((el) => el?.offsetWidth ?? 0));
+        projected.copy(outerSlot).project(camera);
+        const outerLeft = (projected.x * 0.5 + 0.5) * w - LABEL_GAP - widest;
+        useSlots = outerLeft >= LABEL_EDGE_MARGIN * 4;
+      }
 
       renderer.setSize(w, h, false);
       renderer.getDrawingBufferSize(bufferSize);
