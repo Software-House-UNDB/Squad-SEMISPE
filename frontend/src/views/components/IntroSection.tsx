@@ -211,8 +211,9 @@ export function IntroSection({
 
       {/* Container Central com o Canvas de Partículas 3D em WebGL: o canvas fica
           com toda a altura que sobra entre o topo, o título e o indicador, e com
-          a largura toda da tela para as pílulas caberem ao lado da copa (o tamanho
-          da árvore só depende da altura). No celular a árvore é limitada pela
+          a largura toda da tela para as pílulas caberem ao lado da copa (a altura
+          define o tamanho da árvore; a largura, o quanto a copa se abre para os
+          lados). No celular a árvore é limitada pela
           largura, então a altura para em 125vw para não sobrar vão entre as raízes
           e o título */}
       <div className="relative flex flex-col items-center justify-center z-10 px-0 sm:px-4 w-full flex-1 min-h-0">

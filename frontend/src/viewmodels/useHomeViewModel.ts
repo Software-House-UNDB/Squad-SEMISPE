@@ -1,5 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { MAIN_NAV_ITEMS, TREE_ROOT_SECTION_IDS, type NavItem } from '../models/navigation.model';
+import { useSiteNavigation } from './useSiteNavigation';
 import { type AboutSectionData } from '../models/about.model';
 import { type EventHighlight } from '../models/event.model';
 import { BRAND_ACCENTS } from '../models/brand.model';
@@ -123,11 +125,15 @@ export interface HomeViewModel {
   toggleMobileMenu: () => void;
   closeMobileMenu: () => void;
   onNavigateToSection: (href: string, sectionId: string) => void;
-  onReservaClick: () => void;
+  /** Abre a Estrutura, com os espaços do Parque */
+  onEspacosClick: () => void;
 }
 
 export function useHomeViewModel(): HomeViewModel {
-  const [activeSection, setActiveSection] = useState<string>('quem-somos');
+  // Ao entrar, nenhuma seção fica ativa no menu (a tela é da introdução); vindo de
+  // outra página por um link de seção (ex.: /#indicadores), fica ativa a dela
+  const { hash } = useLocation();
+  const [activeSection, setActiveSection] = useState<string>(() => hash.slice(1));
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [isPastTop, setIsPastTop] = useState<boolean>(false);
   const [isIntroOnScreen, setIsIntroOnScreen] = useState<boolean>(true);
@@ -166,27 +172,22 @@ export function useHomeViewModel(): HomeViewModel {
     setIsMobileMenuOpen(false);
   }, []);
 
+  const navigateTo = useSiteNavigation();
+
+  // Vindo de outra página, a home abre na seção do link (/#indicadores) ou no topo,
+  // na introdução (/), e não na altura em que a página anterior estava rolada
+  useEffect(() => {
+    if (hash) document.getElementById(hash.slice(1))?.scrollIntoView();
+    else window.scrollTo(0, 0);
+  }, [hash]);
+
   const onNavigateToSection = useCallback((href: string, sectionId: string) => {
     setActiveSection(sectionId);
     setIsMobileMenuOpen(false);
+    navigateTo(href);
+  }, [navigateTo]);
 
-    if (href.startsWith('#')) {
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  }, []);
-
-  const onReservaClick = useCallback(() => {
-    const reservaAnchor = document.getElementById('reserva-cta');
-    if (reservaAnchor) {
-      reservaAnchor.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      // Quando a rota de reserva estiver pronta, aqui faremos o navigate('/reserva')
-      alert('Fluxo de Reserva de Espaços do Parque Tecnológico');
-    }
-  }, []);
+  const onEspacosClick = useCallback(() => navigateTo('/estrutura'), [navigateTo]);
 
   return {
     navItems: MAIN_NAV_ITEMS,
@@ -201,6 +202,6 @@ export function useHomeViewModel(): HomeViewModel {
     toggleMobileMenu,
     closeMobileMenu,
     onNavigateToSection,
-    onReservaClick,
+    onEspacosClick,
   };
 }

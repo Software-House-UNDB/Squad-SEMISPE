@@ -9,6 +9,8 @@
 
   /* Paleta Oficial de Cores (Página 2 do Manual de Identidade Visual) */
   --color-semispe-yellow: #ffdf00;       /* Amarelo Oficial */
+  --color-semispe-yellow-light: #ffeb80; /* Amarelo claro: identidade da Estrutura */
+  --color-semispe-yellow-soft: #fff4bd;  /* Amarelo bem claro: fundo do item ativo e do hover na Estrutura */
   --color-semispe-blue: #1f71b7;         /* Azul Principal do Logotipo */
   --color-semispe-blue-dark: #033165;    /* Azul Escuro (Post / Fundo Institucional) */
   --color-semispe-teal: #22755e;         /* Verde Petróleo */

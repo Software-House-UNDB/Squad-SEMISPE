@@ -1,6 +1,12 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { generateTreeParticles, TREE_BASE_Y } from '../../utils/treeParticles';
+import {
+  CANOPY_SPREAD_FROM_Y,
+  CANOPY_SPREAD_TO_Y,
+  generateTreeParticles,
+  spreadCanopy,
+  TREE_BASE_Y,
+} from '../../utils/treeParticles';
 import { type NavItem } from '../../models/navigation.model';
 
 export interface TreeParticleCanvasProps {
@@ -31,8 +37,17 @@ const PAINT_RADIUS = 1.7;
 const MAX_GROUPS = 12;
 const HIGHLIGHT_COLOR = '#ffdf00'; // semispe-yellow
 
+/** Abertura horizontal máxima da copa nas telas largas (1 = formato original) */
+const MAX_CANOPY_SPREAD = 1.3;
+/** Meia largura da copa no formato original, em unidades de mundo */
+const CANOPY_HALF_WIDTH = 6.5;
+/** Fração da meia largura visível que a copa aberta pode ocupar: o resto fica para as pílulas */
+const CANOPY_MAX_FILL = 0.7;
+
 interface LabelSlot {
   x: number;
+  /** `x` com a copa totalmente aberta (MAX_CANOPY_SPREAD); padrão: igual a `x` */
+  xOpen?: number;
   y: number;
 }
 
@@ -44,15 +59,20 @@ interface LabelSlot {
  * ponto de onde a pílula cresce para fora.
  */
 const WIDE_BRANCH_SLOTS: readonly LabelSlot[] = [
-  { x: 6.4, y: 0.6 },
-  { x: 4.9, y: 4.5 },
+  { x: 6.4, xOpen: 7.3, y: 0.6 },
+  { x: 4.9, xOpen: 5.6, y: 4.5 },
 ];
 const WIDE_ROOT_SLOTS: readonly LabelSlot[] = [{ x: 3.2, y: -4.1 }];
 
-/** Posição espelhada do rótulo `i` (da esquerda para a direita) entre `count`, ou null se não houver */
-function mirroredSlot(slots: readonly LabelSlot[], i: number, count: number) {
+/**
+ * Posição espelhada do rótulo `i` (da esquerda para a direita) entre `count`, ou null
+ * se não houver; `openness` vai de 0 (copa no formato original) a 1 (totalmente aberta)
+ */
+function mirroredSlot(slots: readonly LabelSlot[], i: number, count: number, openness: number) {
   const slot = count % 2 === 0 ? slots[Math.min(i, count - 1 - i)] : undefined;
-  return slot ? new THREE.Vector3(i < count / 2 ? -slot.x : slot.x, slot.y, 0) : null;
+  if (!slot) return null;
+  const x = THREE.MathUtils.lerp(slot.x, slot.xOpen ?? slot.x, openness);
+  return new THREE.Vector3(i < count / 2 ? -x : x, slot.y, 0);
 }
 
 const labelBaseClass =
@@ -73,6 +93,7 @@ const particleVertexShader = /* glsl */ `
   uniform float uScale;
   uniform float uSize;
   uniform float uBaseY;
+  uniform float uSpread;
   uniform vec3 uMouse;
   uniform float uRepel;
   uniform float uRepelRadius;
@@ -89,7 +110,12 @@ const particleVertexShader = /* glsl */ `
     float start = aSeed.w * 0.7;
     float p = smoothstep(start, start + 0.3, uProgress);
 
-    vec3 pos = mix(aScatter, position, p);
+    // Nas telas largas a copa se abre na horizontal; tronco e raízes não mudam
+    // (mesma conta de spreadCanopy)
+    vec3 target = position;
+    target.xz *= 1.0 + (uSpread - 1.0) * smoothstep(${CANOPY_SPREAD_FROM_Y.toFixed(2)}, ${CANOPY_SPREAD_TO_Y.toFixed(2)}, position.y);
+
+    vec3 pos = mix(aScatter, target, p);
 
     // Balanço de vento, mais forte quanto mais alto
     float h = max(position.y - uBaseY, 0.0);
@@ -254,6 +280,7 @@ export function TreeParticleCanvas({
         uSize: { value: 0.085 },
         uOpacity: { value: 0.6 },
         uBaseY: { value: TREE_BASE_Y },
+        uSpread: { value: 1 },
         uMouse: { value: new THREE.Vector3(9999, 9999, 0) },
         uRepel: { value: 0 },
         uRepelRadius: { value: REPULSION_RADIUS },
@@ -328,9 +355,10 @@ export function TreeParticleCanvas({
     let viewWidth = 0;
     let viewHeight = 0;
 
-    const branchSlots = tree.branchAnchors.map((_, i) => mirroredSlot(WIDE_BRANCH_SLOTS, i, branchCount));
-    const rootSlots = tree.rootAnchors.map((_, i) => mirroredSlot(WIDE_ROOT_SLOTS, i, rootCount));
-    const hasSlots = [...branchSlots, ...rootSlots].every((slot) => slot !== null);
+    // Recalculados a cada resize, conforme a abertura da copa
+    let branchAnchors = tree.branchAnchors;
+    let branchSlots: (THREE.Vector3 | null)[] = [];
+    let rootSlots: (THREE.Vector3 | null)[] = [];
     let useSlots = false;
 
     /** `followTree`: a âncora gira junto com a árvore; sem ele, fica parada na tela */
@@ -371,7 +399,7 @@ export function TreeParticleCanvas({
       const branchOpacity = THREE.MathUtils.smoothstep(pVal, 0.8, 1);
       const rootOpacity = THREE.MathUtils.smoothstep(pVal, 0.35, 0.6);
 
-      tree.branchAnchors.forEach((anchor, i) => {
+      branchAnchors.forEach((anchor, i) => {
         const el = branchLabelRefs.current[i];
         const slot = useSlots ? branchSlots[i] : null;
         if (slot) return placeLabel(el, slot, slot.x < 0 ? 'left' : 'right', branchOpacity, false);
@@ -405,6 +433,24 @@ export function TreeParticleCanvas({
       camera.lookAt(0, 0.4, 0);
       camera.updateProjectionMatrix();
       camera.updateMatrixWorld();
+
+      // O tamanho da árvore vem da altura do canvas; a largura que sobra dos lados
+      // abre a copa até MAX_CANOPY_SPREAD (no celular ela fica no formato original).
+      // As raízes estão abaixo da faixa que se abre, então as âncoras delas não mudam
+      const visibleHalfWidth = distance * Math.tan(THREE.MathUtils.degToRad(FOV / 2)) * aspect;
+      const spread = THREE.MathUtils.clamp(
+        (visibleHalfWidth * CANOPY_MAX_FILL) / CANOPY_HALF_WIDTH,
+        1,
+        MAX_CANOPY_SPREAD
+      );
+      const openness = (spread - 1) / (MAX_CANOPY_SPREAD - 1);
+      material.uniforms.uSpread.value = spread;
+      branchAnchors = tree.branchAnchors.map((anchor) => spreadCanopy(anchor.clone(), spread));
+      branchSlots = tree.branchAnchors.map((_, i) =>
+        mirroredSlot(WIDE_BRANCH_SLOTS, i, branchCount, openness)
+      );
+      rootSlots = tree.rootAnchors.map((_, i) => mirroredSlot(WIDE_ROOT_SLOTS, i, rootCount, openness));
+      const hasSlots = [...branchSlots, ...rootSlots].every((slot) => slot !== null);
 
       // Posições fixas só quando a pílula mais larga cabe inteira ao lado do galho
       // de fora; em telas estreitas (celular) os rótulos seguem as pontas dos galhos

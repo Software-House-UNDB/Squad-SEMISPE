@@ -4,7 +4,7 @@ import { IntroSection } from '../components/IntroSection';
 import { Hero } from '../components/Hero';
 import { EventsGallery } from '../components/EventsGallery';
 import { AboutSection } from '../components/AboutSection';
-import { BrandStripe } from '../components/ui/BrandStripe';
+import { SiteFooter } from '../components/SiteFooter';
 
 export function HomePage() {
   // Consome a camada de ViewModel (MVVM)
@@ -21,7 +21,6 @@ export function HomePage() {
         isHidden={vm.isNavbarHidden}
         onToggleMobileMenu={vm.toggleMobileMenu}
         onNavItemClick={vm.onNavigateToSection}
-        onReservaClick={vm.onReservaClick}
       />
 
       <main className="flex-1">
@@ -34,7 +33,7 @@ export function HomePage() {
         />
 
         {/* 2. Hero Section — animações de entrada com stagger */}
-        <Hero onReservaClick={vm.onReservaClick} section={vm.sections['quem-somos']} />
+        <Hero onEspacosClick={vm.onEspacosClick} section={vm.sections['quem-somos']} />
 
         {/* 3. Carrossel com as fotos dos eventos, na cor de identidade de Eventos */}
         <EventsGallery events={vm.eventHighlights} accent={vm.sections['eventos'].accent} />
@@ -44,10 +43,7 @@ export function HomePage() {
       </main>
 
       {/* 5. Rodapé Institucional */}
-      <footer className="py-6 text-center text-xs text-semispe-light/60 bg-[#021f42] relative">
-        <BrandStripe className="absolute top-0 left-0 opacity-60" />
-        <p>© 2026 Parque Tecnológico de São Luís — SEMISPE / Prefeitura de São Luís</p>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
