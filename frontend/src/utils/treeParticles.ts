@@ -30,6 +30,23 @@ export interface TreeOptions {
 
 /** Altura do solo: base do tronco, de onde partem as raízes e as ondas */
 export const TREE_BASE_Y = -2.6;
+
+/**
+ * Faixa de altura em que a copa se abre na horizontal (ver `spreadCanopy`):
+ * abaixo de FROM nada muda (raízes e base do tronco) e acima de TO a abertura é total
+ */
+export const CANOPY_SPREAD_FROM_Y = -1.2;
+export const CANOPY_SPREAD_TO_Y = 1.5;
+
+/** Abre a copa na horizontal pelo fator `spread` (1 = formato original); a mesma conta roda no shader */
+export function spreadCanopy(point: THREE.Vector3, spread: number) {
+  const s =
+    1 + (spread - 1) * THREE.MathUtils.smoothstep(point.y, CANOPY_SPREAD_FROM_Y, CANOPY_SPREAD_TO_Y);
+  point.x *= s;
+  point.z *= s;
+  return point;
+}
+
 const TRUNK_TOP_Y = 0.3;
 const DUST_RATIO = 0.04;
 

@@ -13,6 +13,8 @@ export interface NavbarProps {
   onReservaClick?: () => void;
   /** Recolhe a barra para fora da tela (usado enquanto a introdução ocupa a viewport) */
   isHidden?: boolean;
+  /** Fundo opaco, para páginas claras (o translúcido fica acinzentado sobre o claro) */
+  isSolid?: boolean;
 }
 
 /** Cada link usa a cor de identidade da sua seção (variável CSS `--accent`) */
@@ -25,11 +27,12 @@ export function Navbar({
   onToggleMobileMenu,
   onNavItemClick,
   isHidden = false,
+  isSolid = false,
 }: NavbarProps) {
   return (
     <header
       inert={isHidden}
-      className={`sticky top-0 z-50 w-full bg-[#021f42]/85 backdrop-blur-md text-white shadow-lg shadow-black/10 transition-transform duration-300 ease-out motion-reduce:transition-none ${
+      className={`sticky top-0 z-50 w-full ${isSolid ? 'bg-[#021f42]' : 'bg-[#021f42]/85 backdrop-blur-md'} text-white shadow-lg shadow-black/10 transition-transform duration-300 ease-out motion-reduce:transition-none ${
         isHidden ? '-translate-y-full' : 'translate-y-0'
       }`}
     >
@@ -38,10 +41,11 @@ export function Navbar({
 
           {/* Logo Oficial do Parque Tecnológico */}
           <a
-            href="#quem-somos"
+            href="/"
             onClick={(e) => {
+              // Volta ao topo da home, na introdução, sem nenhuma seção ativa no menu
               e.preventDefault();
-              onNavItemClick('#quem-somos', 'quem-somos');
+              onNavItemClick('/', '');
             }}
             className="flex items-center gap-3 group focus-visible:outline-semispe-yellow"
             aria-label="Página inicial do Parque Tecnológico de São Luís"

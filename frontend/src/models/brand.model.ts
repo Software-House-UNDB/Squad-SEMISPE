@@ -16,6 +16,8 @@ export interface SectionAccent {
 export const BRAND_ACCENTS = {
   azul: { name: 'Azul', color: '#1f71b7', onDark: '#3b9cd6', onLight: '#1f71b7' },
   amarelo: { name: 'Amarelo', color: '#ffdf00', onDark: '#ffdf00', onLight: '#806a00' },
+  // O amarelo do logotipo clareado, mais suave: identidade da Estrutura
+  amareloClaro: { name: 'Amarelo Claro', color: '#ffeb80', onDark: '#ffeb80', onLight: '#806a00' },
   verde: { name: 'Verde', color: '#3d8f00', onDark: '#6cc12e', onLight: '#2f7d00' },
   verdeClaro: { name: 'Verde Claro', color: '#92bf71', onDark: '#92bf71', onLight: '#4f7f33' },
   verdeOliva: { name: 'Verde Oliva', color: '#8ea700', onDark: '#b2cc18', onLight: '#637400' },

@@ -7,12 +7,13 @@ import { SectionPill } from './ui/SectionPill';
 import { type NavItem } from '../../models/navigation.model';
 
 export interface HeroProps {
-  onReservaClick?: () => void;
+  /** Chamada para a Estrutura (espaços do Parque) */
+  onEspacosClick?: () => void;
   /** Seção representada (rótulo e cor de identidade da pílula de abertura) */
   section?: NavItem;
 }
 
-export function Hero({ onReservaClick, section }: HeroProps) {
+export function Hero({ onEspacosClick, section }: HeroProps) {
   return (
     <section
       id="quem-somos"
@@ -123,11 +124,11 @@ export function Hero({ onReservaClick, section }: HeroProps) {
               <Button
                 size="lg"
                 variant="primary"
-                onClick={onReservaClick}
+                onClick={onEspacosClick}
                 className="w-full sm:w-auto text-xs sm:text-sm tracking-wider px-8 py-3.5 font-black rounded-xl shadow-lg hover:shadow-semispe-yellow/30 text-semispe-blue-dark"
                 style={{ animation: 'ctaPulse 2.5s ease-in-out 1.5s infinite' }}
               >
-                QUERO RESERVAR O ESPAÇO
+                CONHEÇA NOSSOS ESPAÇOS
               </Button>
             </div>
 
