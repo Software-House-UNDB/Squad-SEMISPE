@@ -19,6 +19,7 @@
     "test:spaces:service": "ts-node test/spaces-service.smoke.ts",
     "test:spaces:http": "ts-node test/spaces-http.smoke.ts",
     "dev:spaces-admin": "ts-node test/create-spaces-admin.ts",
+    "test:ideas:http": "ts-node test/ideas-http.smoke.ts",
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:generate": "npm run typeorm -- migration:generate -d src/database/data-source.ts",
     "migration:run": "npm run typeorm -- migration:run -d src/database/data-source.ts",
