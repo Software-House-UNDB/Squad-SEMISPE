@@ -506,3 +506,82 @@ ao finalizar. Ambos exigem `NODE_ENV=development`.
   com aquela empresa traz de benefícios.
 - Nenhum dado é obrigatório na edição dos parceiros, no entanto os campos ainda passam pela validação.
 - Tentar cadastrar um email que pertence a outro parceiro retorna `409` no `POST` e `PATCH`
+
+## Events
+
+Eventos do Parque Tecnológico (hackathons, workshops e cursos), com agenda e
+inscrições.
+
+- `GET` de eventos é público. `POST`, `PATCH` e `DELETE` exigem token de `admin` (`401` sem token, `403` para `user`).
+- Inscrever-se (`POST /api/events/:id/registrations`) é público; consultar as inscrições (`GET`) é só para `admin`.
+
+| Campo | Obrigatório | Observações |
+| ----- | ----------- | ----------- |
+| `title` | sim | até 255 caracteres |
+| `type` | não | `hackathon`, `workshop`, `course` ou `other` (padrão) |
+| `description` | sim | texto |
+| `location` | sim | até 255 caracteres |
+| `startsAt` | sim | data/hora ISO 8601 |
+| `endsAt` | não | não pode ser anterior a `startsAt` (`400`) |
+| `schedule` | não | lista de `{ time, title, description? }`; padrão `[]` |
+| `speakers` | não | lista de `{ name, bio?, photoUrl? }`; padrão `[]` |
+
+### Criar evento
+
+```bash
+curl -X POST http://localhost:3000/api/events \
+  -H "Authorization: Bearer TOKEN_DO_ADMIN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Hackathon SEMISPE",
+    "type": "hackathon",
+    "description": "48h de desenvolvimento.",
+    "location": "Miniauditório",
+    "startsAt": "2026-12-05T09:00:00.000Z",
+    "endsAt": "2026-12-07T09:00:00.000Z",
+    "schedule": [{ "time": "09:00", "title": "Abertura" }],
+    "speakers": [{ "name": "Ana Souza", "bio": "CTO da Empresa X" }]
+  }'
+```
+
+### Listar eventos
+
+```bash
+curl -X GET "http://localhost:3000/api/events?period=upcoming&type=workshop"
+```
+
+Filtros opcionais: `type` e `period` (`upcoming` = a partir de agora, ordem
+crescente; `past` = já ocorridos, mais recentes primeiro). Valor inválido
+retorna `400`.
+
+### Buscar, atualizar e remover
+
+```bash
+curl -X GET http://localhost:3000/api/events/1
+curl -X PATCH http://localhost:3000/api/events/1 \
+  -H "Authorization: Bearer TOKEN_DO_ADMIN" -H "Content-Type: application/json" \
+  -d '{ "location": "Auditório principal" }'
+curl -X DELETE http://localhost:3000/api/events/1 \
+  -H "Authorization: Bearer TOKEN_DO_ADMIN"
+```
+
+Remover um evento remove também as inscrições dele.
+
+### Inscrever-se em um evento
+
+```bash
+curl -X POST http://localhost:3000/api/events/1/registrations \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "Maria Lima", "email": "maria@example.com", "phone": "83999999999" }'
+```
+
+`name` e `email` são obrigatórios; `phone` é opcional. Evento inexistente
+retorna `404`; o mesmo e-mail no mesmo evento retorna `409`.
+
+### Consultar inscrições (admin)
+
+```bash
+curl -X GET http://localhost:3000/api/events/1/registrations \
+  -H "Authorization: Bearer TOKEN_DO_ADMIN"
+```
+

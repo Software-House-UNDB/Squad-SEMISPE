@@ -8,6 +8,7 @@ import { DatabaseModule } from './database/database.module';
 import { SpacesModule } from './spaces/spaces.module';
 import { UsersModule } from './users/users.module';
 import { PartnersModule } from './partners/partners.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PartnersModule } from './partners/partners.module';
     AuthModule,
     PartnersModule,
     SpacesModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
