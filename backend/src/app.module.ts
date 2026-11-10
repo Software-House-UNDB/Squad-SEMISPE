@@ -9,6 +9,7 @@ import { IdeasModule } from './ideas/ideas.module';
 import { SpacesModule } from './spaces/spaces.module';
 import { UsersModule } from './users/users.module';
 import { PartnersModule } from './partners/partners.module';
+import { ReservationsModule } from './reservations/reservations.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PartnersModule } from './partners/partners.module';
     AuthModule,
     PartnersModule,
     SpacesModule,
+    ReservationsModule,
     IdeasModule,
   ],
   controllers: [AppController],

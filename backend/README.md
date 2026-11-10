@@ -41,3 +41,8 @@ npm run migration:revert
 Autenticacao ainda nao foi implementada. Quando for, o plano e JWT proprio
 (`@nestjs/jwt` + `passport-jwt`), com usuarios persistidos no banco deste
 projeto.
+
+## API de reservas
+
+Contrato das rotas, exemplos multipart e regras de aprovação em
+[reservations-api.md](reservations-api.md).

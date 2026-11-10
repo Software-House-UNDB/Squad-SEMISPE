@@ -18,6 +18,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:spaces:service": "ts-node test/spaces-service.smoke.ts",
     "test:spaces:http": "ts-node test/spaces-http.smoke.ts",
+    "test:reservations:mysql": "ts-node test/reservations-mysql.smoke.ts",
+    "test:reservations:docker": "node test/reservations-docker.smoke.cjs",
     "dev:spaces-admin": "ts-node test/create-spaces-admin.ts",
     "test:ideas:http": "ts-node test/ideas-http.smoke.ts",
     "typeorm": "typeorm-ts-node-commonjs",
