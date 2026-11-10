@@ -38,7 +38,13 @@ async function main(): Promise<void> {
       ),
     );
     assert.equal((await dataSource.runMigrations()).length, 0);
-    await dataSource.undoLastMigration();
+    // Reverta também migrations posteriores até alcançar a de reservas.
+    const reservationMigrationIndex = migrations.findIndex(
+      (migration) => migration.name === 'CreateReservations1794300000000',
+    );
+    const revertedCount = migrations.length - reservationMigrationIndex;
+    for (let i = 0; i < revertedCount; i++)
+      await dataSource.undoLastMigration();
     const runner = dataSource.createQueryRunner();
     try {
       assert.equal(await runner.hasTable('reservations'), false);
@@ -46,7 +52,7 @@ async function main(): Promise<void> {
     } finally {
       await runner.release();
     }
-    assert.equal((await dataSource.runMigrations()).length, 1);
+    assert.equal((await dataSource.runMigrations()).length, revertedCount);
     console.log(
       'Migrations: instalação completa, repetição sem alterações e down/up de reservas OK.',
     );

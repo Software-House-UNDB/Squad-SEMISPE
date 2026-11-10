@@ -46,3 +46,8 @@ projeto.
 
 Contrato das rotas, exemplos multipart e regras de aprovação em
 [reservations-api.md](reservations-api.md).
+
+## API de Fale conosco
+
+Recebimento público, consulta administrativa e configuração futura de SMTP em
+[contacts-api.md](contacts-api.md).
