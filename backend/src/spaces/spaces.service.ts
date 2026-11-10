@@ -1,6 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { CreateSpaceDto } from './dto/create-space.dto';
 import { UpdateSpaceDto } from './dto/update-space.dto';
 import { Space } from './entities/space.entity';
@@ -38,9 +42,22 @@ export class SpacesService {
   }
 
   async remove(id: number): Promise<void> {
-    const result = await this.spacesRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Espaço com id ${id} não encontrado.`);
+    try {
+      const result = await this.spacesRepository.delete(id);
+      if (result.affected === 0) {
+        throw new NotFoundException(`Espaço com id ${id} não encontrado.`);
+      }
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        (error.driverError as { code?: string }).code ===
+          'ER_ROW_IS_REFERENCED_2'
+      ) {
+        throw new ConflictException(
+          'O espaço possui reservas e não pode ser excluído. Desative-o para impedir novas solicitações.',
+        );
+      }
+      throw error;
     }
   }
 }
