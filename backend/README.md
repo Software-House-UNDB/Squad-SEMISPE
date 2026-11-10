@@ -51,3 +51,8 @@ Contrato das rotas, exemplos multipart e regras de aprovação em
 
 Recebimento público, consulta administrativa e configuração futura de SMTP em
 [contacts-api.md](contacts-api.md).
+
+## API do Ecossistema de Inovação
+
+CRUD de atores, categorias, filtros e dados GeoJSON para mapa em
+[ecosystem-api.md](ecosystem-api.md).

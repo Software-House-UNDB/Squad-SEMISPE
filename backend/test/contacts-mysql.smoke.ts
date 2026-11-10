@@ -29,19 +29,23 @@ async function main() {
   let smtp: SMTPServer | undefined;
   try {
     await dataSource.initialize();
-    assert.equal(
-      (await dataSource.runMigrations()).length,
-      dataSource.migrations.length,
-    );
+    const migrations = await dataSource.runMigrations();
+    assert.equal(migrations.length, dataSource.migrations.length);
     assert.equal((await dataSource.runMigrations()).length, 0);
-    await dataSource.undoLastMigration();
+    const contactsIndex = migrations.findIndex(
+      (migration) => migration.name === 'CreateContacts1794322000000',
+    );
+    assert.ok(contactsIndex >= 0);
+    const revertedCount = migrations.length - contactsIndex;
+    for (let i = 0; i < revertedCount; i++)
+      await dataSource.undoLastMigration();
     const runner = dataSource.createQueryRunner();
     try {
       assert.equal(await runner.hasTable('contacts'), false);
     } finally {
       await runner.release();
     }
-    assert.equal((await dataSource.runMigrations()).length, 1);
+    assert.equal((await dataSource.runMigrations()).length, revertedCount);
     const password = 'ContactsSmoke123!';
     const users = dataSource.getRepository(User);
     for (const [email, role] of [
