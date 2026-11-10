@@ -10,6 +10,7 @@ import { SpacesModule } from './spaces/spaces.module';
 import { UsersModule } from './users/users.module';
 import { PartnersModule } from './partners/partners.module';
 import { ReservationsModule } from './reservations/reservations.module';
+import { ContactsModule } from './contacts/contacts.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ReservationsModule } from './reservations/reservations.module';
     SpacesModule,
     ReservationsModule,
     IdeasModule,
+    ContactsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
