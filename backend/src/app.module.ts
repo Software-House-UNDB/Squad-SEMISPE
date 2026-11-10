@@ -11,6 +11,7 @@ import { UsersModule } from './users/users.module';
 import { PartnersModule } from './partners/partners.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { ContactsModule } from './contacts/contacts.module';
+import { EcosystemModule } from './ecosystem/ecosystem.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ContactsModule } from './contacts/contacts.module';
     ReservationsModule,
     IdeasModule,
     ContactsModule,
+    EcosystemModule,
   ],
   controllers: [AppController],
   providers: [AppService],

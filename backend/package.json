@@ -22,6 +22,8 @@
     "test:reservations:docker": "node test/reservations-docker.smoke.cjs",
     "test:contacts:mysql": "ts-node test/contacts-mysql.smoke.ts",
     "test:contacts:docker": "node test/contacts-docker.smoke.cjs",
+    "test:ecosystem:mysql": "ts-node test/ecosystem-mysql.smoke.ts",
+    "test:ecosystem:docker": "node test/ecosystem-docker.smoke.cjs",
     "dev:spaces-admin": "ts-node test/create-spaces-admin.ts",
     "test:ideas:http": "ts-node test/ideas-http.smoke.ts",
     "typeorm": "typeorm-ts-node-commonjs",
