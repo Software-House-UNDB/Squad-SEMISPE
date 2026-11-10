@@ -21,6 +21,7 @@
     "test:reservations:mysql": "ts-node test/reservations-mysql.smoke.ts",
     "test:reservations:docker": "node test/reservations-docker.smoke.cjs",
     "dev:spaces-admin": "ts-node test/create-spaces-admin.ts",
+    "test:ideas:http": "ts-node test/ideas-http.smoke.ts",
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:generate": "npm run typeorm -- migration:generate -d src/database/data-source.ts",
     "migration:run": "npm run typeorm -- migration:run -d src/database/data-source.ts",

@@ -27,7 +27,16 @@ async function main(): Promise<void> {
   try {
     await dataSource.initialize();
     const migrations = await dataSource.runMigrations();
-    assert.equal(migrations.length, 6, 'O banco precisa estar vazio.');
+    assert.equal(
+      migrations.length,
+      dataSource.migrations.length,
+      'O banco precisa estar vazio.',
+    );
+    assert.ok(
+      migrations.some(
+        (migration) => migration.name === 'CreateReservations1794300000000',
+      ),
+    );
     assert.equal((await dataSource.runMigrations()).length, 0);
     await dataSource.undoLastMigration();
     const runner = dataSource.createQueryRunner();
