@@ -516,6 +516,300 @@ adicionais usam o MySQL local; o teste HTTP também usa a API em execução.
 Eles criam registros temporários com identificadores exclusivos e os removem
 ao finalizar. Ambos exigem `NODE_ENV=development`.
 
+## Ideas (Banco de Ideias Digital)
+
+Recebe propostas de inovação enviadas por usuários logados (seção 3.8 do
+documento de requisitos). Os dados do proponente (nome, instituição, e-mail e
+telefone) vêm da conta do usuário; a ideia guarda apenas o `authorId`. Não há
+anexos nem envio de e-mail nesta versão.
+
+### Como testar no Postman (passo a passo)
+
+Você vai precisar de **dois tokens**: um de usuário comum (o autor da ideia) e
+um de administrador. Em todas as requisições com corpo, use
+**Body → raw → JSON**. Onde estiver escrito "Bearer Token", vá em
+**Authorization → Type: Bearer Token** e cole só o token.
+
+**Passo 1 — Criar o usuário comum** (uma vez só)
+
+- `POST http://localhost:3000/api/users` · Authorization: **No Auth**
+- Body:
+
+```json
+{
+  "name": "Autor de Teste",
+  "institution": "UNDB",
+  "phone": "98912345678",
+  "email": "autor.ideias@example.com",
+  "password": "senha12345"
+}
+```
+
+- Esperado: `201`. Se der `409`, o usuário já existe; siga para o passo 2.
+
+**Passo 2 — Logar como usuário comum e guardar o token**
+
+- `POST http://localhost:3000/api/auth/login` · Authorization: **No Auth**
+- Body:
+
+```json
+{ "email": "autor.ideias@example.com", "password": "senha12345" }
+```
+
+- Esperado: `200`. Copie o valor de `accessToken`: esse é o **TOKEN DO USUÁRIO**.
+
+**Passo 3 — Criar o admin e guardar o token**
+
+- No terminal, na raiz do projeto, rode uma vez:
+  `docker compose exec semispe-back npm run dev:spaces-admin`
+- `POST http://localhost:3000/api/auth/login` · Authorization: **No Auth**
+- Body:
+
+```json
+{ "email": "admin.espacos@example.com", "password": "EspacosTeste123!" }
+```
+
+- Esperado: `200` com `"role": "admin"`. Copie o `accessToken`: esse é o **TOKEN DO ADMIN**.
+
+O login aceita cinco tentativas por minuto por IP. Se aparecer `429`, espere um minuto.
+
+**Passo 4 — Enviar a ideia** (TOKEN DO USUÁRIO)
+
+- `POST http://localhost:3000/api/ideas` · Bearer Token: TOKEN DO USUÁRIO
+- Body:
+
+```json
+{
+  "title": "Wi-fi gratuito nos ônibus",
+  "category": "mobility",
+  "problem": "Passageiros ficam sem acesso à internet durante o trajeto.",
+  "solution": "Instalar roteadores nos ônibus da frota municipal.",
+  "expectedBenefits": "Inclusão digital e melhor experiência no transporte público.",
+  "targetAudience": "Usuários do transporte público",
+  "applicationArea": "Transporte municipal"
+}
+```
+
+- Esperado: `201`, `"status": "submitted"` e o objeto `author` com seus dados.
+  **Anote o `id`** e use-o no lugar de `ID` nos próximos passos.
+
+**Passo 5 — Ver as próprias ideias** (TOKEN DO USUÁRIO)
+
+- `GET http://localhost:3000/api/ideas/mine` → `200`, a ideia aparece na lista.
+
+**Passo 6 — Editar a ideia** (TOKEN DO USUÁRIO)
+
+- `PATCH http://localhost:3000/api/ideas/ID`
+- Body: `{ "title": "Wi-fi gratuito em toda a frota" }`
+- Esperado: `200` com o título novo.
+
+**Passo 7 — Listar todas como admin** (TOKEN DO ADMIN)
+
+- `GET http://localhost:3000/api/ideas` → `200`.
+- Com o TOKEN DO USUÁRIO a mesma rota deve dar `403`.
+
+**Passo 8 — Mudar o status** (TOKEN DO ADMIN)
+
+- `PATCH http://localhost:3000/api/ideas/ID/status`
+- Body: `{ "status": "evaluation" }`
+- Esperado: `200` com `"status": "evaluation"`.
+
+**Passo 9 — Conferir a trava** (TOKEN DO USUÁRIO)
+
+- Repita o passo 6. Esperado: **`409`** com
+  `A ideia já está em avaliação e não pode mais ser alterada.`
+
+**Passo 10 — Remover** (TOKEN DO ADMIN)
+
+- `DELETE http://localhost:3000/api/ideas/ID` → `200` sem corpo.
+- `GET http://localhost:3000/api/ideas/ID` depois → `404`.
+
+| Campo | Obrigatório na criação | Observações |
+| ----- | ---------------------- | ----------- |
+| `id` | — | gerado automaticamente |
+| `title` | sim | texto não vazio, até 150 caracteres |
+| `category` | sim | uma das categorias da tabela abaixo |
+| `problem` | sim | problema identificado; texto não vazio, até 5000 caracteres |
+| `solution` | sim | solução proposta; texto não vazio, até 5000 caracteres |
+| `expectedBenefits` | sim | benefícios esperados; texto não vazio, até 5000 caracteres |
+| `targetAudience` | sim | público-alvo; texto não vazio, até 255 caracteres |
+| `applicationArea` | sim | área de aplicação; texto não vazio, até 255 caracteres |
+| `status` | — | começa em `submitted`; só o admin altera, por rota própria |
+| `authorId` / `author` | — | definidos pelo token; enviar no corpo retorna `400` |
+| `createdAt` / `updatedAt` | — | gerados automaticamente |
+
+Espaços nas bordas dos textos são removidos. Mensagens de validação em português.
+
+### Categorias e status
+
+| `category` | Exibição |
+| ---------- | -------- |
+| `health` | Saúde |
+| `education` | Educação |
+| `mobility` | Mobilidade |
+| `environment` | Meio Ambiente |
+| `tourism` | Turismo |
+| `culture` | Cultura |
+| `security` | Segurança |
+| `technology` | Tecnologia |
+| `smart_city` | Cidade Inteligente |
+| `digital_government` | Governo Digital |
+| `other` | Outros |
+
+| `status` | Exibição |
+| -------- | -------- |
+| `submitted` | Submetida |
+| `evaluation` | Avaliação |
+| `under_analysis` | Em análise |
+| `approved` | Aprovada |
+| `forwarded` | Encaminhada |
+| `implemented` | Implementada |
+
+O admin pode escolher qualquer status, sem ordem obrigatória.
+
+### Rotas e permissões
+
+Todas as rotas exigem login (`Authorization: Bearer TOKEN`). Sem token ou com
+token inválido → `401`.
+
+| Método | Rota | Acesso | Sucesso |
+| ------ | ---- | ------ | ------- |
+| POST | `/api/ideas` | qualquer usuário logado | `201` com a ideia e o autor |
+| GET | `/api/ideas/mine` | usuário logado (somente as próprias) | `200` com uma lista |
+| GET | `/api/ideas` | admin; filtros opcionais `?category=` e `?status=` | `200` com uma lista |
+| GET | `/api/ideas/:id` | admin ou o autor | `200` com a ideia e o autor |
+| PATCH | `/api/ideas/:id` | somente o autor, enquanto `submitted` | `200` com a ideia atualizada |
+| PATCH | `/api/ideas/:id/status` | admin | `200` com a ideia atualizada |
+| DELETE | `/api/ideas/:id` | admin a qualquer momento; autor só enquanto `submitted` | `200` sem corpo |
+
+Regras de acesso:
+
+- Usuário comum em rota de admin, ou acessando ideia de outra pessoa → `403`.
+- O conteúdo da ideia só é editado pelo autor; um admin que não seja o autor recebe `403` no `PATCH /api/ideas/:id`.
+- Quando o status deixa de ser `submitted`, o autor não pode mais editar nem excluir → `409` com a mensagem
+  `A ideia já está em avaliação e não pode mais ser alterada.`
+- Ideia inexistente → `404`. Id não numérico → `400`.
+- Ao excluir a conta de um usuário, as ideias dele são excluídas junto.
+
+A ideia retornada inclui `author` com `id`, `name`, `institution`, `email` e
+`phone`. Senha, CPF, CNPJ e papel do autor nunca são retornados. O
+`GET /api/ideas/mine` devolve as ideias sem o objeto `author`.
+
+### Enviar ideia
+
+```bash
+curl -X POST http://localhost:3000/api/ideas \
+  -H "Authorization: Bearer TOKEN_DO_USUARIO" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Wi-fi gratuito nos ônibus",
+    "category": "mobility",
+    "problem": "Passageiros ficam sem acesso à internet durante o trajeto.",
+    "solution": "Instalar roteadores nos ônibus da frota municipal.",
+    "expectedBenefits": "Inclusão digital e melhor experiência no transporte público.",
+    "targetAudience": "Usuários do transporte público",
+    "applicationArea": "Transporte municipal"
+  }'
+```
+
+Resposta de exemplo (`201`):
+
+```json
+{
+  "id": 1,
+  "title": "Wi-fi gratuito nos ônibus",
+  "category": "mobility",
+  "problem": "Passageiros ficam sem acesso à internet durante o trajeto.",
+  "solution": "Instalar roteadores nos ônibus da frota municipal.",
+  "expectedBenefits": "Inclusão digital e melhor experiência no transporte público.",
+  "targetAudience": "Usuários do transporte público",
+  "applicationArea": "Transporte municipal",
+  "status": "submitted",
+  "authorId": 2,
+  "createdAt": "2026-11-10T12:00:00.000Z",
+  "updatedAt": "2026-11-10T12:00:00.000Z",
+  "author": {
+    "id": 2,
+    "name": "Jane Doe",
+    "institution": "Instituto Fictício",
+    "email": "jane.doe@example.com",
+    "phone": "11912345678"
+  }
+}
+```
+
+### Minhas ideias
+
+```bash
+curl -X GET http://localhost:3000/api/ideas/mine \
+  -H "Authorization: Bearer TOKEN_DO_USUARIO"
+```
+
+### Listar todas (admin)
+
+```bash
+curl -X GET "http://localhost:3000/api/ideas?category=mobility&status=submitted" \
+  -H "Authorization: Bearer TOKEN_DO_ADMIN"
+```
+
+Os dois filtros são opcionais. Valor fora da lista → `400`.
+
+### Buscar ideia por id
+
+```bash
+curl -X GET http://localhost:3000/api/ideas/1 \
+  -H "Authorization: Bearer TOKEN_DO_USUARIO"
+```
+
+### Editar ideia (autor)
+
+```bash
+curl -X PATCH http://localhost:3000/api/ideas/1 \
+  -H "Authorization: Bearer TOKEN_DO_USUARIO" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Wi-fi gratuito em toda a frota"}'
+```
+
+Campos omitidos mantêm seus valores; `null` é rejeitado. Enviar `status`,
+`authorId` ou `author` → `400`.
+
+### Alterar status (admin)
+
+```bash
+curl -X PATCH http://localhost:3000/api/ideas/1/status \
+  -H "Authorization: Bearer TOKEN_DO_ADMIN" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "evaluation"}'
+```
+
+O corpo aceita somente `status`.
+
+### Remover ideia
+
+```bash
+curl -X DELETE http://localhost:3000/api/ideas/1 \
+  -H "Authorization: Bearer TOKEN_DO_USUARIO"
+```
+
+### Testes automatizados de ideias
+
+```bash
+docker compose exec semispe-back npm test -- --runInBand
+docker compose exec semispe-back npm run test:ideas:http
+```
+
+A suíte Jest confere DTOs, regras do service e permissões do controller. O
+teste HTTP usa a API em execução e o MySQL local: cria usuários e ideias
+temporários com identificadores exclusivos e os remove ao final. Exige
+`NODE_ENV=development`.
+
+### Atualização do banco
+
+`CreateIdeas1794282716408` cria a tabela `ideas` com chave estrangeira
+`authorId` → `users.id` (`ON DELETE CASCADE`). Em produção, aplique com
+`npm run migration:run` antes de iniciar a API. Reverter a migration apaga a
+tabela e as ideias registradas.
+
 ## Notas
 
 - Todas as rotas ficam sob o prefixo `/api` (definido em
