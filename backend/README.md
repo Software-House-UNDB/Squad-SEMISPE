@@ -56,3 +56,8 @@ Recebimento público, consulta administrativa e configuração futura de SMTP em
 
 CRUD de atores, categorias, filtros e dados GeoJSON para mapa em
 [ecosystem-api.md](ecosystem-api.md).
+
+## API de Notícias
+
+Rascunhos, publicação, categorias, consultas públicas e administração em
+[news-api.md](news-api.md).

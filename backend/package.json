@@ -24,6 +24,8 @@
     "test:contacts:docker": "node test/contacts-docker.smoke.cjs",
     "test:ecosystem:mysql": "ts-node test/ecosystem-mysql.smoke.ts",
     "test:ecosystem:docker": "node test/ecosystem-docker.smoke.cjs",
+    "test:news:mysql": "ts-node test/news-mysql.smoke.ts",
+    "test:news:docker": "node test/news-docker.smoke.cjs",
     "dev:spaces-admin": "ts-node test/create-spaces-admin.ts",
     "test:ideas:http": "ts-node test/ideas-http.smoke.ts",
     "typeorm": "typeorm-ts-node-commonjs",
