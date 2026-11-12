@@ -25,15 +25,20 @@ async function main() {
     const migrations = await dataSource.runMigrations();
     assert.equal(migrations.length, dataSource.migrations.length);
     assert.equal((await dataSource.runMigrations()).length, 0);
-    assert.equal(migrations.at(-1)?.name, 'CreateEcosystemActors1794323000000');
-    await dataSource.undoLastMigration();
+    const ecosystemIndex = migrations.findIndex(
+      (migration) => migration.name === 'CreateEcosystemActors1794323000000',
+    );
+    assert.ok(ecosystemIndex >= 0);
+    const revertedCount = migrations.length - ecosystemIndex;
+    for (let i = 0; i < revertedCount; i++)
+      await dataSource.undoLastMigration();
     const runner = dataSource.createQueryRunner();
     try {
       assert.equal(await runner.hasTable('ecosystem_actors'), false);
     } finally {
       await runner.release();
     }
-    assert.equal((await dataSource.runMigrations()).length, 1);
+    assert.equal((await dataSource.runMigrations()).length, revertedCount);
     const schema = await dataSource.driver.createSchemaBuilder().log();
     assert.deepEqual(
       schema.upQueries.filter((query) =>

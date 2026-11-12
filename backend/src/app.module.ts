@@ -12,6 +12,7 @@ import { PartnersModule } from './partners/partners.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { ContactsModule } from './contacts/contacts.module';
 import { EcosystemModule } from './ecosystem/ecosystem.module';
+import { NewsModule } from './news/news.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { EcosystemModule } from './ecosystem/ecosystem.module';
     IdeasModule,
     ContactsModule,
     EcosystemModule,
+    NewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
