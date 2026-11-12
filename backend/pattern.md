@@ -55,7 +55,7 @@ correspondente via `@Body()`.
 
 Amarra tudo: registra a entity no TypeORM (`TypeOrmModule.forFeature([...])`),
 declara o controller e o service, e exporta o service caso outro módulo
-precise dele (ex.: um futuro módulo `auth` injetando `UsersService` para
+precise dele (ex.: o módulo `auth` injetando `UsersService` para
 validar login).
 
 ## Fluxo de injeção de dependência
@@ -102,8 +102,8 @@ Usando `orders` como exemplo:
 O módulo [`users`](src/users) implementa exatamente esse padrão: CRUD
 completo, senha com hash via `bcrypt` no service, senha nunca exposta na
 resposta (`@Exclude()` na entity + `ClassSerializerInterceptor` no
-controller). É o ponto de partida natural para um futuro módulo `auth` (JWT),
-que injetaria `UsersService` para validar credenciais no login.
+controller). O módulo `auth` (JWT) injeta `UsersService` para validar credenciais
+e conferir a versão da sessão em cada requisição protegida.
 
 ## Alternativa: gerar via Nest CLI
 

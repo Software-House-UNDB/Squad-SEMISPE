@@ -11,9 +11,15 @@ describe('JwtStrategy: estado atual da conta', () => {
     { findOne } as unknown as UsersService,
   );
   beforeEach(() => findOne.mockReset());
-  const payload = { sub: 1, email: 'old@example.com', role: Role.ADMIN };
+  const payload = {
+    sub: 1,
+    email: 'old@example.com',
+    role: Role.ADMIN,
+    tokenVersion: 0,
+  };
   it('usa email e papel atuais, mesmo com token antigo de admin', async () => {
     findOne.mockResolvedValue({
+      tokenVersion: 0,
       id: 1,
       email: 'new@example.com',
       role: Role.USER,
@@ -30,6 +36,21 @@ describe('JwtStrategy: estado atual da conta', () => {
       UnauthorizedException,
     );
   });
+  it('revoga tokens de versões anteriores à troca de senha', async () => {
+    findOne.mockResolvedValue({ id: 1, role: Role.USER, tokenVersion: 1 });
+    await expect(strategy.validate(payload)).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
+  });
+  it.each([undefined, null, -1, 1.5, '0'])(
+    'rejeita token legado ou versão inválida: %s',
+    async (tokenVersion) => {
+      await expect(
+        strategy.validate({ ...payload, tokenVersion } as JwtPayload),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+      expect(findOne).not.toHaveBeenCalled();
+    },
+  );
   it.each([undefined, null, 0, -1, '1', 1.5])(
     'rejeita sub inválido: %s',
     async (sub) => {

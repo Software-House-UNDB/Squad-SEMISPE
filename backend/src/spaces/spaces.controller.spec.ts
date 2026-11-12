@@ -98,6 +98,7 @@ describe('SpacesController (HTTP, validação e permissões)', () => {
       .useValue({
         findOneBy: jest.fn().mockImplementation(({ id }: { id: number }) =>
           Promise.resolve({
+            tokenVersion: 0,
             id,
             email: id === 1 ? 'admin@example.com' : 'user@example.com',
             role: id === 1 ? Role.ADMIN : Role.USER,
@@ -121,17 +122,19 @@ describe('SpacesController (HTTP, validação e permissões)', () => {
 
     const jwt = module.get(JwtService);
     adminToken = await jwt.signAsync({
+      tokenVersion: 0,
       sub: 1,
       email: 'admin@example.com',
       role: Role.ADMIN,
     });
     userToken = await jwt.signAsync({
+      tokenVersion: 0,
       sub: 2,
       email: 'user@example.com',
       role: Role.USER,
     });
     expiredToken = await jwt.signAsync(
-      { sub: 1, email: 'admin@example.com', role: Role.ADMIN },
+      { tokenVersion: 0, sub: 1, email: 'admin@example.com', role: Role.ADMIN },
       { expiresIn: -1 },
     );
   });

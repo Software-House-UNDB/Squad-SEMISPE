@@ -85,7 +85,7 @@ curl -X PATCH http://localhost:3000/api/spaces/1 \
 - Token válido, mas role sem permissão para a rota (quando a rota exigir um
   papel específico via `@Roles(...)`) → `403 Forbidden`.
 
-O payload do JWT carrega apenas `sub` (id do usuário), `email` e `role` —
+O payload do JWT carrega `sub` (id do usuário), `email`, `role` e `tokenVersion` —
 nunca a senha ou outros dados pessoais.
 
 ## Users
@@ -103,7 +103,9 @@ Sem token, token inválido/expirado ou conta excluída: `401`.
 Usuário comum tentando listar usuários ou acessar outra conta: `403`.
 O JWT é validado contra o banco a cada requisição; email e papel atuais
 prevalecem sobre os dados antigos do token. Falhas do banco não são tratadas
-como credenciais inválidas. Esta consulta não revoga tokens por troca de senha.
+como credenciais inválidas. A versão de sessão é conferida contra `tokenVersion`
+do usuário. Trocar a senha incrementa a versão e revoga os tokens anteriores.
+Tokens antigos sem essa claim também recebem 401 e exigem novo login.
 
 
 Modelo de usuário (`User`):
@@ -239,6 +241,9 @@ Outros exemplos de erro esperados:
 - Tentativa de enviar `role` no corpo da requisição → `400 Bad Request`
   (`property role should not exist`).
 - Usuário inexistente em `GET/PATCH/DELETE /users/:id` → `404 Not Found`.
+- Conta com ideias vinculadas em `DELETE /users/:id` → `409 Conflict`,
+  inclusive para administrador. A exclusão física exige tratar os vínculos
+  explicitamente, preservando o histórico institucional.
 
 
 ## Partners
@@ -327,7 +332,7 @@ Cadastro dos espaços físicos do Parque Tecnológico. A solicitação de reserv
 | ----- | ---------------------- | ----------- |
 | `id` | — | gerado automaticamente; não enviar no corpo |
 | `name` | sim | texto não vazio, até 150 caracteres; espaços nas bordas são removidos; nomes repetidos são permitidos |
-| `description` | não | texto opcional; `null` representa ausência de descrição |
+| `description` | não | texto opcional, até 5.000 caracteres; `null` representa ausência de descrição |
 | `capacity` | sim | número inteiro maior que zero, até 2147483647 |
 | `photoUrls` | não | lista de URLs HTTP/HTTPS; começa como `[]` quando omitida; arquivos de imagem não são enviados por esta API |
 | `equipment` | não | lista de nomes não vazios; começa como `[]` quando omitida |
@@ -689,7 +694,8 @@ Regras de acesso:
 - Quando o status deixa de ser `submitted`, o autor não pode mais editar nem excluir → `409` com a mensagem
   `A ideia já está em avaliação e não pode mais ser alterada.`
 - Ideia inexistente → `404`. Id não numérico → `400`.
-- Ao excluir a conta de um usuário, as ideias dele são excluídas junto.
+- Contas com ideias vinculadas não podem ser excluídas fisicamente (409).
+  A migration de integridade substitui a exclusão em cascata por RESTRICT.
 
 A ideia retornada inclui `author` com `id`, `name`, `institution`, `email` e
 `phone`. Senha, CPF, CNPJ e papel do autor nunca são retornados. O
@@ -806,7 +812,8 @@ temporários com identificadores exclusivos e os remove ao final. Exige
 ### Atualização do banco
 
 `CreateIdeas1794282716408` cria a tabela `ideas` com chave estrangeira
-`authorId` → `users.id` (`ON DELETE CASCADE`). Em produção, aplique com
+`authorId` → `users.id` (originalmente CASCADE; após
+`FixBackendIntegrity1794496000000`, `ON DELETE RESTRICT`). Em produção, aplique com
 `npm run migration:run` antes de iniciar a API. Reverter a migration apaga a
 tabela e as ideias registradas.
 

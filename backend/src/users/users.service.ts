@@ -59,27 +59,46 @@ export class UsersService {
       ? await bcrypt.hash(dto.password, SALT_ROUNDS)
       : undefined;
 
-    const user = await this.usersRepository.preload({
-      id,
-      ...dto,
-      ...(password ? { password } : {}),
-    });
-
-    if (!user) {
-      throw new NotFoundException(`User with id ${id} not found`);
-    }
-
     try {
-      return await this.usersRepository.save(user);
+      return await this.usersRepository.manager.transaction(async (manager) => {
+        const user = await manager.findOne(User, {
+          where: { id },
+          lock: { mode: 'pessimistic_write' },
+        });
+        if (!user) throw new NotFoundException(`User with id ${id} not found`);
+        const changes = Object.fromEntries(
+          Object.entries(dto).filter(
+            ([key, value]) => key !== 'password' && value !== undefined,
+          ),
+        );
+        Object.assign(user, changes);
+        if (password) {
+          user.password = password;
+          user.tokenVersion++;
+        }
+        return manager.save(User, user);
+      });
     } catch (error) {
       this.rethrowAsConflict(error);
     }
   }
 
   async remove(id: number): Promise<void> {
-    const result = await this.usersRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`User with id ${id} not found`);
+    try {
+      const result = await this.usersRepository.delete(id);
+      if (result.affected === 0)
+        throw new NotFoundException(`User with id ${id} not found`);
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        (error.driverError as { code?: string }).code ===
+          'ER_ROW_IS_REFERENCED_2'
+      ) {
+        throw new ConflictException(
+          'A conta possui ideias vinculadas e não pode ser excluída. O histórico precisa ser preservado.',
+        );
+      }
+      throw error;
     }
   }
 

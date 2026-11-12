@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { ThrottlerStorage, ThrottlerStorageService } from '@nestjs/throttler';
 import type { Server } from 'node:http';
 import * as request from 'supertest';
 import { AuthModule } from '../auth/auth.module';
@@ -14,6 +15,7 @@ describe('ReservationsController (HTTP)', () => {
   let app: INestApplication<Server>;
   let admin: string;
   let user: string;
+  const storage = new ThrottlerStorageService();
   const pdf = Buffer.from('%PDF-1.4\nexample');
   const payload = {
     requester: {
@@ -70,10 +72,13 @@ describe('ReservationsController (HTTP)', () => {
       controllers: [ReservationsController],
       providers: [{ provide: ReservationsService, useValue: service }],
     })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(storage)
       .overrideProvider(getRepositoryToken(User))
       .useValue({
         findOneBy: jest.fn().mockImplementation(({ id }: { id: number }) =>
           Promise.resolve({
+            tokenVersion: 0,
             id,
             email: 'test@example.com',
             role: id === 1 ? Role.ADMIN : Role.USER,
@@ -92,10 +97,13 @@ describe('ReservationsController (HTTP)', () => {
     );
     await app.init();
     const jwt = module.get(JwtService);
-    admin = await jwt.signAsync({ sub: 1 });
-    user = await jwt.signAsync({ sub: 2 });
+    admin = await jwt.signAsync({ tokenVersion: 0, sub: 1 });
+    user = await jwt.signAsync({ tokenVersion: 0, sub: 2 });
   });
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    storage.onApplicationShutdown();
+  });
   afterAll(async () => {
     await app?.close();
   });
@@ -106,6 +114,15 @@ describe('ReservationsController (HTTP)', () => {
       .field('dados', typeof data === 'string' ? data : JSON.stringify(data))
       .attach('oficio', pdf, 'oficio.pdf');
   }
+  it('bloqueia a sexta tentativa antes de processar upload e não confia em IP enviado pelo cliente', async () => {
+    for (let i = 0; i < 5; i++) await submit().expect(201);
+    await request(app.getHttpServer())
+      .post('/api/reservations')
+      .set('X-Forwarded-For', '203.0.113.55')
+      .send({})
+      .expect(429);
+    expect(service.create).toHaveBeenCalledTimes(5);
+  });
 
   it('aceita multipart público e transforma o JSON com o ValidationPipe global habilitado', async () => {
     await submit().expect(201).expect({ id: 1, status: 'pending' });

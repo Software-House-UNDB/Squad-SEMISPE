@@ -26,6 +26,8 @@
     "test:ecosystem:docker": "node test/ecosystem-docker.smoke.cjs",
     "test:news:mysql": "ts-node test/news-mysql.smoke.ts",
     "test:news:docker": "node test/news-docker.smoke.cjs",
+    "test:integrity:mysql": "ts-node test/integrity-mysql.smoke.ts",
+    "test:integrity:docker": "node test/integrity-docker.smoke.cjs",
     "dev:spaces-admin": "ts-node test/create-spaces-admin.ts",
     "test:ideas:http": "ts-node test/ideas-http.smoke.ts",
     "typeorm": "typeorm-ts-node-commonjs",
@@ -102,6 +104,9 @@
     "testEnvironment": "node"
   },
   "overrides": {
+    "typeorm": { "glob": "14.0.2" },
+    "@nestjs/cli": { "glob": "14.0.2" },
+    "@typescript-eslint/typescript-estree": { "minimatch": "11.0.1" },
     "@nestjs/platform-express": {
       "multer": "2.5.0"
     }

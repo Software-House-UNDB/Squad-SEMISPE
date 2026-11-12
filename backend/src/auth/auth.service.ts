@@ -42,6 +42,7 @@ export class AuthService {
     }
 
     const payload: JwtPayload = {
+      tokenVersion: user.tokenVersion,
       sub: user.id,
       email: user.email,
       role: user.role,

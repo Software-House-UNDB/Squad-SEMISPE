@@ -62,6 +62,7 @@ describe('ContactsController (HTTP)', () => {
       .useValue({
         findOneBy: jest.fn().mockImplementation(({ id }: { id: number }) =>
           Promise.resolve({
+            tokenVersion: 0,
             id,
             email: 'test@example.com',
             role: id === 1 ? Role.ADMIN : Role.USER,
@@ -80,8 +81,8 @@ describe('ContactsController (HTTP)', () => {
     );
     await app.init();
     const jwt = module.get(JwtService);
-    admin = await jwt.signAsync({ sub: 1 });
-    user = await jwt.signAsync({ sub: 2 });
+    admin = await jwt.signAsync({ tokenVersion: 0, sub: 1 });
+    user = await jwt.signAsync({ tokenVersion: 0, sub: 2 });
   });
   beforeEach(() => {
     jest.clearAllMocks();

@@ -66,8 +66,11 @@ export class Idea {
   authorId: number;
 
   // Os dados do proponente (nome, instituição, e-mail, telefone) vêm da conta.
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'authorId' })
+  @ManyToOne(() => User, { onDelete: 'RESTRICT' })
+  @JoinColumn({
+    name: 'authorId',
+    foreignKeyConstraintName: 'FK_e4ef6f47b5b94dff28757a88f37',
+  })
   author?: User;
 
   @CreateDateColumn()

@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import * as request from 'supertest';
+import type { Server } from 'node:http';
 import { Role } from '../../users/entities/user.entity';
 import { UsersService } from '../../users/users.service';
 import { NotFoundException } from '@nestjs/common';
@@ -32,7 +33,7 @@ class ProtectedTestController {
 }
 
 describe('JwtAuthGuard (integração via HTTP)', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
   let jwtService: JwtService;
 
   beforeAll(async () => {
@@ -52,6 +53,7 @@ describe('JwtAuthGuard (integração via HTTP)', () => {
             findOne: jest.fn().mockImplementation((id: number) => {
               if (id === 7)
                 return Promise.resolve({
+                  tokenVersion: 0,
                   id: 7,
                   email: 'valid@example.com',
                   role: Role.ADMIN,
@@ -70,7 +72,7 @@ describe('JwtAuthGuard (integração via HTTP)', () => {
       ],
     }).compile();
 
-    app = moduleRef.createNestApplication();
+    app = moduleRef.createNestApplication<INestApplication<Server>>();
     await app.init();
     jwtService = moduleRef.get(JwtService);
   });
@@ -85,6 +87,7 @@ describe('JwtAuthGuard (integração via HTTP)', () => {
 
   it('rejeita com 401 quando o Authorization não usa o esquema Bearer', async () => {
     const token = await jwtService.signAsync({
+      tokenVersion: 0,
       sub: 1,
       email: 'a@a.com',
       role: Role.USER,
@@ -106,7 +109,7 @@ describe('JwtAuthGuard (integração via HTTP)', () => {
   it('rejeita com 401 quando o token tem assinatura inválida', async () => {
     const tokenSignedWithOtherSecret = new JwtService({
       secret: OTHER_SECRET,
-    }).sign({ sub: 1, email: 'a@a.com', role: Role.USER });
+    }).sign({ tokenVersion: 0, sub: 1, email: 'a@a.com', role: Role.USER });
 
     await request(app.getHttpServer())
       .get('/__test-protected')
@@ -116,7 +119,7 @@ describe('JwtAuthGuard (integração via HTTP)', () => {
 
   it('rejeita com 401 quando o token está expirado', async () => {
     const expiredToken = await jwtService.signAsync(
-      { sub: 1, email: 'a@a.com', role: Role.USER },
+      { tokenVersion: 0, sub: 1, email: 'a@a.com', role: Role.USER },
       { expiresIn: '-1s' },
     );
 
@@ -128,6 +131,7 @@ describe('JwtAuthGuard (integração via HTTP)', () => {
 
   it('autentica com 200 e popula req.user quando o token é válido', async () => {
     const token = await jwtService.signAsync({
+      tokenVersion: 0,
       sub: 7,
       email: 'valid@example.com',
       role: Role.ADMIN,

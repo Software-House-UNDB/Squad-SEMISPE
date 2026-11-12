@@ -5,6 +5,7 @@ import type { Server } from 'node:http';
 import * as bcrypt from 'bcrypt';
 import * as request from 'supertest';
 import { DataSource } from 'typeorm';
+import { ThrottlerStorage, ThrottlerStorageService } from '@nestjs/throttler';
 import { AppModule } from '../src/app.module';
 import dataSource from '../src/database/data-source';
 import { ReservationAttachment } from '../src/reservations/entities/reservation-attachment.entity';
@@ -135,11 +136,17 @@ async function main(): Promise<void> {
       subject: 'Teste isolado',
       consent: true,
     };
-    const submit = (change: Record<string, unknown> = {}, content = pdf) =>
-      http()
+    const submit = (change: Record<string, unknown> = {}, content = pdf) => {
+      // Cada cenário de persistência tem orçamento próprio; o limite público é
+      // exercitado separadamente no teste HTTP e na regressão de integridade.
+      app!
+        .get<ThrottlerStorageService>(ThrottlerStorage)
+        .onApplicationShutdown();
+      return http()
         .post('/api/reservations')
         .field('dados', JSON.stringify({ ...payload, ...change }))
         .attach('oficio', content, 'oficio.pdf');
+    };
     const idOf = (response: request.Response) =>
       (response.body as { id: number }).id;
     const review = (id: number, status: string) =>

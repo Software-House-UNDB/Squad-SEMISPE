@@ -38,6 +38,9 @@ export class CreateSpaceDto {
   @IsOptional()
   @Transform(trimText)
   @IsString({ message: 'A descrição deve ser um texto.' })
+  @MaxLength(5000, {
+    message: 'A descrição deve ter no máximo 5000 caracteres.',
+  })
   description?: string | null;
 
   @IsInt({ message: 'A capacidade deve ser um número inteiro.' })

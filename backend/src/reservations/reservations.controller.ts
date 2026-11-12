@@ -14,6 +14,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -38,6 +39,7 @@ export class ReservationsController {
   constructor(private readonly reservations: ReservationsService) {}
 
   @Post()
+  @UseGuards(ThrottlerGuard)
   @UseInterceptors(
     FileFieldsInterceptor(
       Object.values(AttachmentKind).map((name) => ({ name, maxCount: 1 })),
