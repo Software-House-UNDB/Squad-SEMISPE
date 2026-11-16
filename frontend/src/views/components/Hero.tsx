@@ -1,4 +1,4 @@
-import { MapPin } from 'lucide-react';
+import { ArrowRight, MapPin } from 'lucide-react';
 import photoTrapiche from '../../assets/photos/photo-trapiche-santo-angelo.jpg';
 import graphicTriangulos from '../../assets/graphics/graphic-brand-triangles.svg';
 import shapeTopografico from '../../assets/graphics/shape-hero-topographic-lines.svg';
@@ -7,13 +7,13 @@ import { SectionPill } from './ui/SectionPill';
 import { type NavItem } from '../../models/navigation.model';
 
 export interface HeroProps {
-  /** Chamada para a Estrutura (espaços do Parque) */
-  onEspacosClick?: () => void;
+  /** "Saiba mais": abre a página Quem Somos completa */
+  onSaibaMaisClick?: () => void;
   /** Seção representada (rótulo e cor de identidade da pílula de abertura) */
   section?: NavItem;
 }
 
-export function Hero({ onEspacosClick, section }: HeroProps) {
+export function Hero({ onSaibaMaisClick, section }: HeroProps) {
   return (
     <section
       id="quem-somos"
@@ -124,11 +124,13 @@ export function Hero({ onEspacosClick, section }: HeroProps) {
               <Button
                 size="lg"
                 variant="primary"
-                onClick={onEspacosClick}
-                className="w-full sm:w-auto text-xs sm:text-sm tracking-wider px-8 py-3.5 font-black rounded-xl shadow-lg hover:shadow-semispe-yellow/30 text-semispe-blue-dark"
+                onClick={onSaibaMaisClick}
+                aria-label="Saiba mais sobre o Parque Tecnológico"
+                className="group w-full sm:w-auto gap-2 text-xs sm:text-sm tracking-wider px-8 py-3.5 font-black rounded-xl shadow-lg hover:shadow-semispe-yellow/30 text-semispe-blue-dark"
                 style={{ animation: 'ctaPulse 2.5s ease-in-out 1.5s infinite' }}
               >
-                CONHEÇA NOSSOS ESPAÇOS
+                SAIBA MAIS
+                <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
               </Button>
             </div>
 

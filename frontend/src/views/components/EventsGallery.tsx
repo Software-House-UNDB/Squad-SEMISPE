@@ -45,7 +45,7 @@ export function EventsGallery({
   events,
   accent = BRAND_ACCENTS.verdeOliva,
   title = 'O Parque em movimento',
-  subtitle = 'Hackathons, meetups, workshops e palestras que conectam o ecossistema de inovação no Trapiche Santo Ângelo.',
+  subtitle = 'Hackathons, game jams, fóruns e capacitações que movimentam o ecossistema de inovação de São Luís.',
 }: EventsGalleryProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);

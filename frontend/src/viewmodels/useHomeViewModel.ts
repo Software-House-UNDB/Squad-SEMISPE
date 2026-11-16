@@ -5,6 +5,11 @@ import { useSiteNavigation } from './useSiteNavigation';
 import { type AboutSectionData } from '../models/about.model';
 import { type EventHighlight } from '../models/event.model';
 import { BRAND_ACCENTS } from '../models/brand.model';
+import photoJornadaInova from '../assets/photos/eventos/jornada-inova-sao-luis-plateia.webp';
+import photoForum from '../assets/photos/eventos/forum-cidades-digitais-plateia.webp';
+import photoLancamento from '../assets/photos/eventos/inauguracao-parque-painel.webp';
+import photoGameJam from '../assets/photos/eventos/global-game-jam-2026-participantes.webp';
+import photoHackathon from '../assets/photos/eventos/hackathon-do-mercado-equipes.webp';
 
 export const DEFAULT_ABOUT_DATA: AboutSectionData = {
   badge: 'ECOSSISTEMA DE INOVAÇÃO',
@@ -55,42 +60,53 @@ export const DEFAULT_ABOUT_DATA: AboutSectionData = {
   ]
 };
 
-// Conteúdo provisório: substituir pelas fotos e pela agenda real dos eventos do Parque
+// Eventos realizados, do mais recente ao mais antigo, com as fotos enviadas pela
+// SEMISPE (datas tiradas das próprias fotos e dos banners dos eventos)
 export const DEFAULT_EVENT_HIGHLIGHTS: EventHighlight[] = [
   {
-    id: 'evento-hackathon',
-    title: 'Hackathon de Soluções Urbanas',
-    date: 'XX/XX/2026',
-    category: 'Hackathon',
-    accent: BRAND_ACCENTS.azul,
-  },
-  {
-    id: 'evento-meetup',
-    title: 'Meetup do Ecossistema de Startups',
-    date: 'XX/XX/2026',
-    category: 'Meetup',
+    id: 'evento-jornada-inova',
+    title: 'Jornada Inova São Luís',
+    date: '19/09/2026',
+    category: 'Capacitação',
     accent: BRAND_ACCENTS.verde,
+    image: photoJornadaInova,
+    imageAlt: 'Plateia acompanha uma palestra da Jornada Inova São Luís',
   },
   {
-    id: 'evento-workshop',
-    title: 'Workshop de Inovação Aberta',
-    date: 'XX/XX/2026',
-    category: 'Workshop',
+    id: 'evento-forum-cidades',
+    title: 'Fórum de Cidades Digitais e Inteligentes',
+    date: '20/08/2026',
+    category: 'Fórum',
+    accent: BRAND_ACCENTS.azul,
+    image: photoForum,
+    imageAlt: 'Plateia do Fórum de Cidades Digitais e Inteligentes',
+  },
+  {
+    id: 'evento-lancamento',
+    title: 'Lançamento do Parque Tecnológico',
+    date: '17/03/2026',
+    category: 'Lançamento',
     accent: BRAND_ACCENTS.amarelo,
+    image: photoLancamento,
+    imageAlt: 'Painel de convidados no palco do lançamento do Parque Tecnológico de São Luís',
   },
   {
-    id: 'evento-palestra',
-    title: 'Ciclo de Palestras Tecnologia e Cidade',
-    date: 'XX/XX/2026',
-    category: 'Palestra',
+    id: 'evento-global-game-jam',
+    title: 'Global Game Jam 2026',
+    date: '30/01 a 01/02/2026',
+    category: 'Game Jam',
     accent: BRAND_ACCENTS.verdePetroleo,
+    image: photoGameJam,
+    imageAlt: 'Participantes da Global Game Jam 2026 reunidos no Parque Tecnológico',
   },
   {
-    id: 'evento-demo-day',
-    title: 'Demo Day das Startups Incubadas',
-    date: 'XX/XX/2026',
-    category: 'Demo Day',
+    id: 'evento-hackathon-mercado',
+    title: 'Hackathon do Mercado',
+    date: '20 e 21/01/2026',
+    category: 'Hackathon',
     accent: BRAND_ACCENTS.verdeOliva,
+    image: photoHackathon,
+    imageAlt: 'Equipes programam em seus notebooks durante o Hackathon do Mercado',
   },
 ];
 
@@ -125,8 +141,8 @@ export interface HomeViewModel {
   toggleMobileMenu: () => void;
   closeMobileMenu: () => void;
   onNavigateToSection: (href: string, sectionId: string) => void;
-  /** Abre a Estrutura, com os espaços do Parque */
-  onEspacosClick: () => void;
+  /** "Saiba mais" do resumo: abre a página Quem Somos completa */
+  onQuemSomosClick: () => void;
 }
 
 export function useHomeViewModel(): HomeViewModel {
@@ -187,7 +203,7 @@ export function useHomeViewModel(): HomeViewModel {
     navigateTo(href);
   }, [navigateTo]);
 
-  const onEspacosClick = useCallback(() => navigateTo('/estrutura'), [navigateTo]);
+  const onQuemSomosClick = useCallback(() => navigateTo('/quem-somos'), [navigateTo]);
 
   return {
     navItems: MAIN_NAV_ITEMS,
@@ -202,6 +218,6 @@ export function useHomeViewModel(): HomeViewModel {
     toggleMobileMenu,
     closeMobileMenu,
     onNavigateToSection,
-    onEspacosClick,
+    onQuemSomosClick,
   };
 }
