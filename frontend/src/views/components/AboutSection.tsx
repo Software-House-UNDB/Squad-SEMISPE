@@ -4,41 +4,12 @@ import videoLogo from '../../assets/brand/logo-com-movimento.mp4';
 import { type AboutSectionData } from '../../models/about.model';
 import { type NavItem } from '../../models/navigation.model';
 import { SectionPill } from './ui/SectionPill';
+import { useInViewOnce } from './ui/useInViewOnce';
 
 export interface AboutSectionProps {
   data: AboutSectionData;
   /** Seção representada (rótulo e cor de identidade da pílula de abertura) */
   section?: NavItem;
-}
-
-/**
- * Hook que detecta quando o elemento entra no viewport e dispara uma animação de countReveal.
- * Usado pelos cards de métricas para "ganhar vida" ao aparecer na tela.
- */
-function useInViewAnimation(threshold = 0.2) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [hasEntered, setHasEntered] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        if (entry.isIntersecting && !hasEntered) {
-          setHasEntered(true);
-          observer.disconnect();
-        }
-      },
-      { threshold }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [hasEntered, threshold]);
-
-  return { ref, hasEntered };
 }
 
 /**
@@ -58,7 +29,7 @@ function MetricCard({
   index: number;
   gridPlacement: string;
 }) {
-  const { ref, hasEntered } = useInViewAnimation(0.15);
+  const { ref, hasEntered } = useInViewOnce(0.15);
 
   // Delay escalonado para cada card: 0ms, 80ms, 160ms...
   const delay = `${index * 80}ms`;

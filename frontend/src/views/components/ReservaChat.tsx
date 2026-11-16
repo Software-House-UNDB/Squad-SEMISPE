@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check, LogOut } from 'lucide-react';
 import simboloParque from '../../assets/brand/favicon.png';
+import { type UserAccount } from '../../models/auth.model';
 import { useEstruturaContext } from '../../viewmodels/useEstruturaViewModel';
 import { useReservaViewModel, type ReservaViewModel } from '../../viewmodels/useReservaViewModel';
 import { ReservaComposer } from './ReservaComposer';
@@ -60,10 +61,13 @@ function UserMessage({
   text,
   isEditing,
   onEdit,
+  caption,
 }: {
   text: string;
   isEditing: boolean;
   onEdit?: () => void;
+  /** Rótulo do dado, quando ele veio da conta e não de uma pergunta */
+  caption?: string;
 }) {
   return (
     <div className="flex flex-col items-end gap-1">
@@ -72,7 +76,14 @@ function UserMessage({
           isEditing ? 'ring-2 ring-semispe-yellow-light ring-offset-2 ring-offset-semispe-surface' : ''
         }`}
       >
-        <span className="sr-only">Você: </span>
+        {caption ? (
+          <span className="block text-[10px] font-black tracking-wider uppercase text-white/65">
+            {caption}
+            <span className="sr-only"> (da sua conta): </span>
+          </span>
+        ) : (
+          <span className="sr-only">Você: </span>
+        )}
         {text}
       </div>
       {onEdit && (
@@ -147,10 +158,36 @@ function ProgressStages({ stages }: { stages: ReservaViewModel['stages'] }) {
   );
 }
 
-/** "Fazer reserva": a solicitação em formato de conversa, como na inscrição do INEP */
-export function ReservaChat() {
+/** Conta que preenche a reserva, com a saída, no topo do chat */
+function AccountBar({ account, onLogout }: { account: UserAccount; onLogout: () => void }) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-semispe-blue-dark/10 bg-semispe-surface/60 px-4 py-2 text-xs sm:px-6">
+      <p className="min-w-0 truncate">
+        <span className="text-semispe-blue-dark/60">Reservando como </span>
+        <span className="font-bold">{account.name}</span>
+      </p>
+      <button
+        type="button"
+        onClick={onLogout}
+        className="inline-flex shrink-0 items-center gap-1.5 rounded-sm font-bold text-semispe-blue-dark/70 underline underline-offset-2 hover:text-semispe-blue-dark cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-semispe-blue-dark"
+      >
+        <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
+        Sair
+      </button>
+    </div>
+  );
+}
+
+export interface ReservaChatProps {
+  /** Conta logada: os dados dela entram como respostas já dadas */
+  account: UserAccount;
+  onLogout: () => void;
+}
+
+/** A solicitação de reserva em formato de conversa */
+export function ReservaChat({ account, onLogout }: ReservaChatProps) {
   const estrutura = useEstruturaContext();
-  const vm = useReservaViewModel(estrutura.spaces);
+  const vm = useReservaViewModel(estrutura.spaces, account);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [prefersReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
@@ -187,6 +224,7 @@ export function ReservaChat() {
       {/* Abaixo do lg o menu da Estrutura vira uma faixa no topo: o chat desconta a altura dela
           para caber inteiro na tela */}
       <div className="flex flex-col h-[calc(100svh-16rem)] min-h-[26rem] lg:h-[calc(100svh-66px-6rem)] lg:min-h-[32rem] rounded-2xl bg-white shadow-sm ring-1 ring-semispe-blue-dark/10 overflow-hidden">
+        <AccountBar account={account} onLogout={onLogout} />
         <ProgressStages stages={vm.stages} />
 
         {/* `relative` prende aqui os textos só para leitor de tela (sr-only, posição absoluta):
@@ -209,6 +247,7 @@ export function ReservaChat() {
                 <div className="pb-2">
                   <UserMessage
                     text={item.answer}
+                    caption={item.fromAccount ? item.label : undefined}
                     isEditing={item.isEditing}
                     onEdit={vm.canEdit ? () => vm.startEdit(item.id) : undefined}
                   />

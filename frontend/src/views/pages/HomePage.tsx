@@ -33,7 +33,7 @@ export function HomePage() {
         />
 
         {/* 2. Hero Section — animações de entrada com stagger */}
-        <Hero onEspacosClick={vm.onEspacosClick} section={vm.sections['quem-somos']} />
+        <Hero onSaibaMaisClick={vm.onQuemSomosClick} section={vm.sections['quem-somos']} />
 
         {/* 3. Carrossel com as fotos dos eventos, na cor de identidade de Eventos */}
         <EventsGallery events={vm.eventHighlights} accent={vm.sections['eventos'].accent} />

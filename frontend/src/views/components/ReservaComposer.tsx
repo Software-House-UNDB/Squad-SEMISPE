@@ -3,12 +3,10 @@ import { Check, Loader2, Paperclip, RotateCcw, SendHorizontal, X } from 'lucide-
 import { type Space } from '../../models/space.model';
 import { formatFileSize, formatTime } from '../../utils/formatters';
 import { type AnswerValue, type ComposerStep, type ReservaInput } from '../../viewmodels/useReservaViewModel';
+import { fieldClass, primaryButtonClass, secondaryButtonClass } from './ui/formStyles';
 
 // Os formulários usam noValidate: quem valida é o chat, com as mensagens do assistente
 // e a limpeza das respostas (a validação do navegador barraria "meu e-mail é x@y.com")
-const fieldClass =
-  'w-full min-w-0 rounded-xl bg-semispe-surface px-4 py-3 text-sm text-semispe-blue-dark placeholder:text-semispe-blue-dark/45 ring-1 ring-semispe-blue-dark/10 transition-shadow focus:outline-none focus:ring-2 focus:ring-semispe-blue-dark';
-
 const sendButtonClass =
   'shrink-0 grid place-items-center w-12 h-12 rounded-xl bg-semispe-blue-dark text-white transition-colors hover:bg-semispe-yellow-light hover:text-semispe-blue-dark cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-semispe-blue-dark disabled:hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-semispe-blue-dark focus-visible:ring-offset-2';
 
@@ -18,12 +16,6 @@ const optionClass = (isSelected: boolean) =>
       ? 'bg-semispe-yellow-light ring-semispe-yellow-light'
       : 'bg-white ring-semispe-blue-dark/20 hover:bg-semispe-yellow-soft hover:ring-semispe-yellow-light'
   }`;
-
-const primaryButtonClass =
-  'inline-flex items-center justify-center gap-2 rounded-xl bg-semispe-blue-dark px-5 py-3 text-xs font-black tracking-wider uppercase text-white transition-colors hover:bg-semispe-yellow-light hover:text-semispe-blue-dark cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-semispe-blue-dark disabled:hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-semispe-blue-dark focus-visible:ring-offset-2';
-
-const secondaryButtonClass =
-  'inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-xs font-black tracking-wider uppercase ring-1 ring-semispe-blue-dark/20 transition-colors hover:bg-semispe-blue-dark/5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-semispe-blue-dark';
 
 /**
  * Foca o campo quando a pergunta aparece, sem rolar a página. Só com mouse: no
