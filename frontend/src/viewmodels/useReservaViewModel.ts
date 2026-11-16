@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { type UserAccount } from '../models/auth.model';
 import { type Space } from '../models/space.model';
 import {
   ACCEPTED_FILE_EXTENSIONS,
@@ -117,6 +118,11 @@ interface StepDef {
   resetWithDependencies?: boolean;
   /** Fica fora do resumo final */
   hiddenInSummary?: boolean;
+  /**
+   * Resposta tirada da conta de quem está logado. undefined quando a conta não
+   * tem o dado (ou tem um valor que a reserva recusaria): aí o chat pergunta.
+   */
+  fromAccount?: (account: UserAccount) => AnswerValue | undefined;
 }
 
 const SLOT_MINUTES = 30;
@@ -235,6 +241,7 @@ const STEPS: readonly StepDef[] = [
       return name.split(' ').length >= 2 && name.length >= 5 ? ok(name) : fail('Digite o nome completo, com sobrenome.');
     },
     display: (value) => text(value),
+    fromAccount: (account) => account.name.trim() || undefined,
   },
   {
     id: 'email',
@@ -257,12 +264,14 @@ const STEPS: readonly StepDef[] = [
       return isValidEmail(email) ? ok(email) : fail('Esse e-mail não parece válido. Confira e tente de novo.');
     },
     display: (value) => text(value),
+    fromAccount: (account) => account.email || undefined,
   },
   {
     id: 'telefone',
     stage: 'dados',
     label: 'Telefone',
-    prompts: () => ['E um telefone com DDD para contato?'],
+    // Telefone é opcional no cadastro: costuma ser a primeira pergunta depois dos dados da conta
+    prompts: () => ['Qual é o seu telefone com DDD para contato?'],
     input: () => ({
       kind: 'text',
       type: 'tel',
@@ -274,6 +283,7 @@ const STEPS: readonly StepDef[] = [
     validate: (raw) =>
       isValidPhone(text(raw)) ? ok(onlyDigits(text(raw))) : fail('Informe o telefone com DDD, por exemplo (98) 99999-9999.'),
     display: (value) => formatPhone(text(value)),
+    fromAccount: (account) => (account.phone && isValidPhone(account.phone) ? onlyDigits(account.phone) : undefined),
   },
   {
     id: 'tipoSolicitante',
@@ -283,6 +293,14 @@ const STEPS: readonly StepDef[] = [
     input: () => ({ kind: 'choice', options: REQUESTER_OPTIONS }),
     validate: (raw) => validateChoice(raw, REQUESTER_OPTIONS),
     display: (value) => labelOf(REQUESTER_OPTIONS, value),
+    // A conta não diz em nome de quem é a reserva: só com CNPJ vira instituição, só com
+    // CPF vira pessoa física. Com os dois (ou nenhum), o chat pergunta
+    fromAccount: (account) => {
+      const hasCpf = Boolean(account.cpf && isValidCpf(account.cpf));
+      const hasCnpj = Boolean(account.cnpj && isValidCnpj(account.cnpj));
+      if (hasCpf === hasCnpj) return undefined;
+      return hasCnpj ? 'instituicao' : 'pessoa-fisica';
+    },
   },
   {
     id: 'instituicao',
@@ -303,6 +321,10 @@ const STEPS: readonly StepDef[] = [
       return name.length >= 2 ? ok(name) : fail('Informe o nome da instituição.');
     },
     display: (value) => text(value),
+    fromAccount: (account) => {
+      const name = account.institution?.trim() ?? '';
+      return name.length >= 2 ? name : undefined;
+    },
   },
   {
     id: 'cnpj',
@@ -319,6 +341,8 @@ const STEPS: readonly StepDef[] = [
     }),
     validate: (raw) => (isValidCnpj(text(raw)) ? ok(onlyDigits(text(raw))) : fail('Esse CNPJ não é válido. Confira os números.')),
     display: (value) => formatCnpj(text(value)),
+    // O cadastro só confere a quantidade de dígitos; a reserva confere o dígito verificador
+    fromAccount: (account) => (account.cnpj && isValidCnpj(account.cnpj) ? onlyDigits(account.cnpj) : undefined),
   },
   {
     id: 'cpf',
@@ -329,6 +353,7 @@ const STEPS: readonly StepDef[] = [
     input: () => ({ kind: 'text', type: 'text', placeholder: '000.000.000-00', inputMode: 'numeric', format: formatCpf }),
     validate: (raw) => (isValidCpf(text(raw)) ? ok(onlyDigits(text(raw))) : fail('Esse CPF não é válido. Confira os números.')),
     display: (value) => formatCpf(text(value)),
+    fromAccount: (account) => (account.cpf && isValidCpf(account.cpf) ? onlyDigits(account.cpf) : undefined),
   },
   {
     id: 'espaco',
@@ -570,6 +595,52 @@ function invalidateDependents(changed: ReservaStepId, next: Answers, ctx: StepCo
   return removed;
 }
 
+/**
+ * Responde com os dados da conta as perguntas ativas que ainda estão em aberto
+ * (muda `answers`). Devolve o que preencheu, na ordem do roteiro. Roda ao abrir o
+ * chat e depois de cada resposta: escolher "Instituição", por exemplo, ativa as
+ * perguntas de instituição e CNPJ, que podem vir da conta.
+ */
+function fillFromAccount(answers: Answers, account: UserAccount, ctx: StepContext): ReservaStepId[] {
+  const filled: ReservaStepId[] = [];
+  // O roteiro pergunta o tipo de solicitante antes dos documentos: uma passada basta
+  for (const step of STEPS) {
+    if (!step.fromAccount || answers[step.id] !== undefined || !isStepActive(step, { ...ctx, answers })) continue;
+    const value = step.fromAccount(account);
+    if (value === undefined) continue;
+    answers[step.id] = value;
+    filled.push(step.id);
+  }
+  return filled;
+}
+
+/** Começo da conversa: as respostas que a conta já dá */
+function prefill(account: UserAccount, ctx: StepContext): { answers: Answers; order: ReservaStepId[] } {
+  const answers: Answers = {};
+  const order = fillFromAccount(answers, account, { ...ctx, answers });
+  return { answers, order };
+}
+
+/** Mensagens que abrem a conversa, antes dos dados trazidos da conta */
+function accountIntro(account: UserAccount): string[] {
+  const firstName = account.name.trim().split(' ')[0];
+  return [
+    `Olá${firstName ? `, ${firstName}` : ''}! Sou o assistente de reservas do Parque Tecnológico de São Luís. Vou montar a sua solicitação com você. Leva poucos minutos.`,
+    'Já trouxe os dados da sua conta. Se algo for diferente nesta reserva, use “Editar”: a mudança vale só para ela, e a sua conta continua igual.',
+  ];
+}
+
+function buildContext(answers: Answers, spaces: readonly Space[], suggestedSpace: Space | null): StepContext {
+  const now = new Date();
+  return {
+    answers,
+    spaces,
+    suggestedSpace,
+    today: toIsoDate(now),
+    nowMinutes: now.getHours() * 60 + now.getMinutes(),
+  };
+}
+
 function buildRequest(answers: Answers, consent: boolean): { request: ReservationRequest; files: ReservationFiles } {
   const type = answers.tipoSolicitante as RequesterType;
   const eventType = text(answers.tipoEvento);
@@ -618,8 +689,18 @@ export interface ComposerStep {
 
 export interface ReservaViewModel {
   stages: readonly { id: ReservaStage; label: string; state: 'done' | 'current' | 'todo' }[];
-  /** Perguntas já respondidas, na ordem em que foram respondidas */
-  transcript: readonly { id: ReservaStepId; messages: string[]; answer: string; isEditing: boolean }[];
+  /**
+   * Perguntas já respondidas, na ordem em que foram respondidas. As que vieram
+   * da conta (`fromAccount`) aparecem com o rótulo, sem a pergunta antes.
+   */
+  transcript: readonly {
+    id: ReservaStepId;
+    label: string;
+    messages: string[];
+    answer: string;
+    isEditing: boolean;
+    fromAccount: boolean;
+  }[];
   /** Mensagens novas do assistente, ao pé da conversa; `key` muda a cada nova leva */
   pending: { key: string; messages: string[] } | null;
   phase: 'perguntas' | 'revisao' | 'enviado';
@@ -640,28 +721,31 @@ export interface ReservaViewModel {
   restart: () => void;
 }
 
-/** Chat de reserva: roteiro de perguntas, validação, edição das respostas e envio */
-export function useReservaViewModel(spaces: readonly Space[]): ReservaViewModel {
+/**
+ * Chat de reserva: roteiro de perguntas, validação, edição das respostas e envio.
+ * Quem chega aqui já está logado: os dados da conta entram como respostas já
+ * dadas, que podem ser editadas só para esta reserva (a conta não muda).
+ */
+export function useReservaViewModel(spaces: readonly Space[], account: UserAccount): ReservaViewModel {
   const [searchParams] = useSearchParams();
-  const [answers, setAnswers] = useState<Answers>({});
-  const [order, setOrder] = useState<ReservaStepId[]>([]);
+
+  // Vindo do cartão de um espaço (?espaco=id), o chat já sugere esse espaço
+  const suggestedSpace = spaces.find((space) => space.id === Number(searchParams.get('espaco'))) ?? null;
+
+  const [initial] = useState(() => prefill(account, buildContext({}, spaces, suggestedSpace)));
+  const [answers, setAnswers] = useState<Answers>(initial.answers);
+  const [order, setOrder] = useState<ReservaStepId[]>(initial.order);
+  /** Respostas que vieram da conta (continuam marcadas mesmo depois de editadas) */
+  const [fromAccount, setFromAccount] = useState<ReservaStepId[]>(initial.order);
   const [reasked, setReasked] = useState<ReservaStepId[]>([]);
   const [editing, setEditing] = useState<ReservaStepId | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [consent, setConsentState] = useState(false);
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
 
-  // Vindo do cartão de um espaço (?espaco=id), o chat já sugere esse espaço
-  const suggestedSpace = spaces.find((space) => space.id === Number(searchParams.get('espaco'))) ?? null;
-
-  const now = new Date();
-  const ctx: StepContext = {
-    answers,
-    spaces,
-    suggestedSpace,
-    today: toIsoDate(now),
-    nowMinutes: now.getHours() * 60 + now.getMinutes(),
-  };
+  const ctx = buildContext(answers, spaces, suggestedSpace);
+  // A saudação abre a conversa, junto do primeiro dado da conta
+  const introStep = initial.order[0] ?? null;
 
   const activeSteps = STEPS.filter((step) => isStepActive(step, ctx));
   const pendingStep = activeSteps.find((step) => answers[step.id] === undefined) ?? null;
@@ -717,12 +801,18 @@ export function useReservaViewModel(spaces: readonly Space[]): ReservaViewModel 
   const transcript = order
     .map(stepById)
     .filter((step) => isStepActive(step, ctx) && answers[step.id] !== undefined)
-    .map((step) => ({
-      id: step.id,
-      messages: step.prompts(ctx),
-      answer: step.display(answers[step.id] as AnswerValue, ctx),
-      isEditing: editing === step.id,
-    }));
+    .map((step) => {
+      const isFromAccount = fromAccount.includes(step.id);
+      return {
+        id: step.id,
+        label: step.label,
+        // Dado da conta não foi perguntado: só a saudação, no primeiro deles
+        messages: isFromAccount ? (step.id === introStep ? accountIntro(account) : []) : step.prompts(ctx),
+        answer: step.display(answers[step.id] as AnswerValue, ctx),
+        isEditing: editing === step.id,
+        fromAccount: isFromAccount,
+      };
+    });
 
   const summary = STAGES.filter((stage) => stage.id !== 'revisao').map((stage) => ({
     stage: stage.label,
@@ -750,9 +840,16 @@ export function useReservaViewModel(spaces: readonly Space[]): ReservaViewModel 
 
     const next: Answers = { ...answers, [step.id]: result.value };
     const removed = sameValue(answers[step.id], result.value) ? [] : invalidateDependents(step.id, next, ctx);
+    // A resposta pode abrir perguntas que a conta responde (ex.: Instituição → nome e CNPJ)
+    const filled = fillFromAccount(next, account, ctx);
 
     setAnswers(next);
-    setOrder((prev) => (prev.includes(step.id) ? prev : [...prev, step.id]).filter((id) => !removed.includes(id)));
+    setOrder((prev) =>
+      [...(prev.includes(step.id) ? prev : [...prev, step.id]), ...filled.filter((id) => !prev.includes(id))].filter(
+        (id) => !removed.includes(id)
+      )
+    );
+    if (filled.length > 0) setFromAccount((prev) => [...prev, ...filled.filter((id) => !prev.includes(id))]);
     setReasked((prev) => [...prev.filter((id) => id !== step.id && !removed.includes(id)), ...removed]);
     setEditing(null);
   };
@@ -793,8 +890,11 @@ export function useReservaViewModel(spaces: readonly Space[]): ReservaViewModel 
   };
 
   const restart = () => {
-    setAnswers({});
-    setOrder([]);
+    // A próxima reserva começa de novo com os dados da conta, sem as edições desta
+    const fresh = prefill(account, buildContext({}, spaces, suggestedSpace));
+    setAnswers(fresh.answers);
+    setOrder(fresh.order);
+    setFromAccount(fresh.order);
     setReasked([]);
     setEditing(null);
     setError(null);
