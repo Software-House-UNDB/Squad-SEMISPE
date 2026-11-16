@@ -127,7 +127,44 @@
   to   { transform: scaleX(1); }
 }
 
+/* Ponte do ecossistema (Quem Somos): traços que se desenham e torres que sobem */
+@keyframes bridgeDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes bridgeRise {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
 /* ─── Classes Utilitárias de Animação ─────────────────────────────────────── */
+
+/*
+ * Ponte do ecossistema: antes de entrar na tela, os traços (`data-draw`, com pathLength="1")
+ * ficam apagados, as torres (`data-rise`) ficam rentes à água e o resto (`data-fade`) invisível.
+ * Cada peça recebe o próprio atraso em `--delay`.
+ */
+.ponte [data-draw] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.ponte [data-rise] {
+  transform: scaleY(0);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.ponte [data-fade] {
+  opacity: 0;
+}
+.ponte.is-visible [data-draw] {
+  animation: bridgeDraw var(--duration, 0.9s) ease-out var(--delay, 0s) forwards;
+}
+.ponte.is-visible [data-rise] {
+  animation: bridgeRise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) var(--delay, 0s) forwards;
+}
+.ponte.is-visible [data-fade] {
+  animation: fadeIn 0.6s ease-out var(--delay, 0s) forwards;
+}
 
 /* Pausa todas as animações para quem prefere reduzir movimento (WCAG 2.3.3) */
 @media (prefers-reduced-motion: reduce) {

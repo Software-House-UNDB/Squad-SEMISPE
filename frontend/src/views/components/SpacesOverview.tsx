@@ -10,7 +10,7 @@ import {
   Wifi,
   type LucideIcon,
 } from 'lucide-react';
-import { BRAND_ACCENTS } from '../../models/brand.model';
+import { BRAND_ACCENTS, type SectionAccent } from '../../models/brand.model';
 import { type Space, type SpaceAmenity } from '../../models/space.model';
 import { useEstruturaContext } from '../../viewmodels/useEstruturaViewModel';
 
@@ -23,12 +23,12 @@ const AMENITY_ICONS: Record<SpaceAmenity['id'], LucideIcon> = {
 };
 
 /** Cada comodidade com uma cor do logotipo: fundo clarinho e o ícone no tom legível */
-const AMENITY_COLORS: Record<SpaceAmenity['id'], { tint: string; icon: string }> = {
-  'ar-condicionado': { tint: '#e6f0f9', icon: BRAND_ACCENTS.azul.onLight },
-  wifi: { tint: '#e7f2de', icon: BRAND_ACCENTS.verde.onLight },
-  lousa: { tint: '#fff8d1', icon: BRAND_ACCENTS.amareloClaro.onLight },
-  som: { tint: '#dff0ea', icon: BRAND_ACCENTS.verdePetroleo.onLight },
-  microfones: { tint: '#eef3d4', icon: BRAND_ACCENTS.verdeOliva.onLight },
+const AMENITY_COLORS: Record<SpaceAmenity['id'], SectionAccent> = {
+  'ar-condicionado': BRAND_ACCENTS.azul,
+  wifi: BRAND_ACCENTS.verde,
+  lousa: BRAND_ACCENTS.amareloClaro,
+  som: BRAND_ACCENTS.verdePetroleo,
+  microfones: BRAND_ACCENTS.verdeOliva,
 };
 
 /**
@@ -133,7 +133,7 @@ export function SpacesOverview() {
               >
                 <span
                   className="grid place-items-center w-6 h-6 rounded-full"
-                  style={{ background: colors.tint, color: colors.icon }}
+                  style={{ background: colors.tint, color: colors.onLight }}
                 >
                   <Icon className="w-3.5 h-3.5" aria-hidden="true" />
                 </span>
