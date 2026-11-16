@@ -10,6 +10,7 @@ import { Role, User } from '../../users/entities/user.entity';
 import { UsersService } from '../../users/users.service';
 
 export interface JwtPayload {
+  tokenVersion: number;
   sub: number;
   email: string;
   role: Role;
@@ -35,7 +36,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
-    if (!payload || !Number.isSafeInteger(payload.sub) || payload.sub <= 0) {
+    if (
+      !payload ||
+      !Number.isSafeInteger(payload.sub) ||
+      payload.sub <= 0 ||
+      !Number.isSafeInteger(payload.tokenVersion) ||
+      payload.tokenVersion < 0
+    ) {
       throw new UnauthorizedException('Token inválido');
     }
     let user: User;
@@ -46,6 +53,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         throw new UnauthorizedException('Conta não encontrada');
       }
       throw error;
+    }
+    if (payload.tokenVersion !== user.tokenVersion) {
+      throw new UnauthorizedException('Sessão expirada. Faça login novamente.');
     }
     return {
       userId: user.id,

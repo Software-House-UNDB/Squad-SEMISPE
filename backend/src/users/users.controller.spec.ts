@@ -58,11 +58,13 @@ describe('UsersController: autorização HTTP', () => {
     await app.init();
     const jwt = module.get(JwtService);
     userToken = await jwt.signAsync({
+      tokenVersion: 0,
       sub: 2,
       email: 'test@example.com',
       role: Role.USER,
     });
     adminToken = await jwt.signAsync({
+      tokenVersion: 0,
       sub: 1,
       email: 'test@example.com',
       role: Role.ADMIN,

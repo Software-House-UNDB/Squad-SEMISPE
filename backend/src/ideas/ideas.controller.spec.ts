@@ -62,6 +62,7 @@ describe('IdeasController (HTTP, validação e permissões)', () => {
       .useValue({
         findOneBy: jest.fn().mockImplementation(({ id }: { id: number }) =>
           Promise.resolve({
+            tokenVersion: 0,
             id,
             email: `user${id}@example.com`,
             role: id === ADMIN_ID ? Role.ADMIN : Role.USER,
@@ -85,11 +86,13 @@ describe('IdeasController (HTTP, validação e permissões)', () => {
 
     const jwt = module.get(JwtService);
     adminToken = await jwt.signAsync({
+      tokenVersion: 0,
       sub: ADMIN_ID,
       email: 'user1@example.com',
       role: Role.ADMIN,
     });
     userToken = await jwt.signAsync({
+      tokenVersion: 0,
       sub: USER_ID,
       email: 'user2@example.com',
       role: Role.USER,

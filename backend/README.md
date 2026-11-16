@@ -38,9 +38,15 @@ npm run migration:revert
 - `src/database/database.module.ts`: conexao TypeORM (MySQL)
 - `src/database/data-source.ts`: DataSource usado pelo CLI do TypeORM (migrations)
 
-Autenticacao ainda nao foi implementada. Quando for, o plano e JWT proprio
-(`@nestjs/jwt` + `passport-jwt`), com usuarios persistidos no banco deste
-projeto.
+Autenticação JWT implementada com `@nestjs/jwt` e `passport-jwt`, usuários no
+MySQL e autorização por proprietário/administrador. Trocar a senha revoga os
+tokens anteriores. Contratos em [api.md](api.md).
+
+## Correções de integridade
+
+Histórico de ideias, sessões, espaços reservados, validações e rate limit em
+[integrity-fixes.md](integrity-fixes.md). Consulte esse documento antes de aplicar
+a migration de correção e atualizar a aplicação.
 
 ## API de reservas
 

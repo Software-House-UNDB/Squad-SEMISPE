@@ -19,6 +19,34 @@ const validate = (
 ) => pipe.transform(payload, { type: 'body', metatype });
 
 describe('Partner DTOs', () => {
+  it.each([CreatePartnerDto, UpdatePartnerDto])(
+    'rejeita descrições acima do limite e textos em branco',
+    async (metatype) => {
+      for (const change of [
+        { description: 'x'.repeat(70000) },
+        { name: '   ' },
+        { description: '  ' },
+        { shortDescription: '  ' },
+      ]) {
+        await expect(
+          validate({ ...valid, ...change }, metatype),
+        ).rejects.toBeInstanceOf(BadRequestException);
+      }
+    },
+  );
+  it('normaliza textos e e-mail antes de persistir', async () => {
+    await expect(
+      validate(
+        {
+          ...valid,
+          name: ' Parceiro ',
+          email: ' P@EXAMPLE.COM ',
+          description: ' Descrição ',
+        },
+        CreatePartnerDto,
+      ),
+    ).resolves.toEqual(valid);
+  });
   it.each(['name', 'email', 'description', 'shortDescription', 'category'])(
     'rejeita null em %s no POST e PATCH',
     async (field) => {

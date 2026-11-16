@@ -18,16 +18,21 @@ async function main() {
     await dataSource.initialize();
     const migrations = await dataSource.runMigrations();
     assert.equal(migrations.length, dataSource.migrations.length);
-    assert.equal(migrations.at(-1)?.name, 'CreateNews1794490000000');
+    const newsIndex = migrations.findIndex(
+      (migration) => migration.name === 'CreateNews1794490000000',
+    );
+    assert.ok(newsIndex >= 0);
     assert.equal((await dataSource.runMigrations()).length, 0);
-    await dataSource.undoLastMigration();
+    const revertedCount = migrations.length - newsIndex;
+    for (let i = 0; i < revertedCount; i++)
+      await dataSource.undoLastMigration();
     const runner = dataSource.createQueryRunner();
     try {
       assert.equal(await runner.hasTable('news'), false);
     } finally {
       await runner.release();
     }
-    assert.equal((await dataSource.runMigrations()).length, 1);
+    assert.equal((await dataSource.runMigrations()).length, revertedCount);
     const schema = await dataSource.driver.createSchemaBuilder().log();
     assert.deepEqual(
       schema.upQueries.filter((query) => /\bnews\b/.test(query.query)),

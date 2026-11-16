@@ -46,6 +46,10 @@ export class User {
   @Column({ type: 'enum', enum: Role, default: Role.USER })
   role: Role;
 
+  @Exclude()
+  @Column({ type: 'int', default: 0 })
+  tokenVersion: number = 0;
+
   @CreateDateColumn()
   createdAt: Date;
 

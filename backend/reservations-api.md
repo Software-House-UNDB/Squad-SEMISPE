@@ -8,6 +8,12 @@ O frontend não faz parte desta implementação.
 
 Todas as rotas usam o prefixo `/api`.
 
+O envio público (`POST /reservations`) permite cinco tentativas por IP por
+minuto, incluindo payloads inválidos. A sexta recebe 429 com Retry-After antes
+do processamento de arquivos. Não se confia em X-Forwarded-For fornecido pelo
+cliente. O armazenamento do limite é em memória por instância; escala horizontal
+requer armazenamento compartilhado e configuração explícita do proxy.
+
 | Método | Rota | Acesso | Resultado |
 | --- | --- | --- | --- |
 | POST | `/reservations` | Público | Envia uma solicitação com anexos; retorna 201 |
@@ -95,6 +101,9 @@ retornados como `HH:MM:SS`.
 - A decisão registra `reviewedBy` a partir do JWT, `reviewedAt` e `reviewNote`
   opcional (até 2.000 caracteres). Esses campos refletem a última decisão.
 - O espaço com histórico de reservas não pode ser excluído; desative-o.
+- Alterações em capacidade/equipamentos que tornem reservas aprovadas futuras
+  ou em andamento incompatíveis recebem 409. Cancele ou reavalie as reservas
+  primeiro. Reservas encerradas não bloqueiam essas mudanças.
 
 Exemplo de análise:
 

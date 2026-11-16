@@ -15,6 +15,7 @@ describe('AuthService', () => {
   const plainPassword = 'correct-password';
 
   const buildUser = async (): Promise<User> => ({
+    tokenVersion: 0,
     id: 1,
     name: 'Jane Doe',
     institution: null,
@@ -68,7 +69,7 @@ describe('AuthService', () => {
     expect(result.user).not.toHaveProperty('password');
   });
 
-  it('gera o payload do JWT apenas com sub, email e role', async () => {
+  it('gera o payload do JWT com identidade, papel e versão de sessão', async () => {
     const user = await buildUser();
     usersService.findByEmail.mockResolvedValue(user);
 
@@ -78,6 +79,7 @@ describe('AuthService', () => {
     const payload = jwtService.signAsync.mock.calls[0][0];
 
     expect(payload).toEqual({
+      tokenVersion: 0,
       sub: user.id,
       email: user.email,
       role: user.role,

@@ -12,6 +12,15 @@ describe('Space DTOs (ValidationPipe)', () => {
 
   const requiredFields = { name: 'Miniauditório', capacity: 60 };
 
+  it('rejeita descrições grandes no cadastro e na edição antes de atingir o banco', async () => {
+    await expect(
+      create({ ...requiredFields, description: 'x'.repeat(70000) }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(
+      update({ description: 'x'.repeat(5001) }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
   function create(payload: Record<string, unknown>): Promise<CreateSpaceDto> {
     return pipe.transform(payload, {
       type: 'body',
@@ -97,7 +106,7 @@ describe('Space DTOs (ValidationPipe)', () => {
 
   it('aceita atualização parcial preservando a ausência dos outros campos', async () => {
     expect(await update({ capacity: 80 })).toEqual({ capacity: 80 });
-    expect(await update({ state: SpaceState.INACTIVE })).toEqual({ 
+    expect(await update({ state: SpaceState.INACTIVE })).toEqual({
       state: SpaceState.INACTIVE,
     });
   });
@@ -137,7 +146,7 @@ describe('Space DTOs (ValidationPipe)', () => {
     );
     await expect(update({ state: 'invalido' })).rejects.toBeInstanceOf(
       BadRequestException,
-    )
+    );
     await expect(update({ id: 1 })).rejects.toBeInstanceOf(BadRequestException);
   });
 
@@ -155,12 +164,18 @@ describe('Space DTOs (ValidationPipe)', () => {
       { equipment: ['   '] },
       'O nome de cada equipamento não pode ficar vazio.',
     ],
-    [{ description: 123 }, 'A descrição deve ser um texto.'],
+    [
+      { description: 123 },
+      [
+        'A descrição deve ter no máximo 5000 caracteres.',
+        'A descrição deve ser um texto.',
+      ],
+    ],
     [{ state: 'invalido' }, 'O status deve ser ativo ou inativo.'],
   ])('retorna a mensagem em português para %j', async (payload, message) => {
     const response = {
       statusCode: 400,
-      message: [message],
+      message: Array.isArray(message) ? message : [message],
     };
 
     await expect(

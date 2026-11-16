@@ -1,5 +1,19 @@
 # Dependências e auditoria
 
+## Revisão de 12/11/2026
+
+Corrigida a cadeia de glob/minimatch com overrides por pacote pai, mantendo
+TypeORM 0.3.x e NestJS 11. `npm audit --omit=dev` não reporta vulnerabilidades
+nesta revisão. A auditoria completa mantém nove entradas baixas na cadeia de
+deepmerge usada por Nest CLI/Jest, sem correção compatível aplicada. A sugestão
+de downgrade major do npm não foi utilizada. Instalação limpa no Docker/Node 20,
+build, lint e testes validam os overrides.
+
+Detalhes das correções e atualização de banco/sessões em
+[integrity-fixes.md](integrity-fixes.md).
+
+## Registro anterior
+
 Na atualização de segurança de 28/10/2026:
 
 - Mantido NestJS 11, com `@nestjs/platform-express` a partir de 11.2.6 para impedir o rebaixamento observado no `npm audit fix`.
