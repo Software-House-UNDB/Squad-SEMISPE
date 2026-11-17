@@ -2,13 +2,14 @@
 
 Módulo NestJS `ReservationsModule`, integrado ao cadastro existente por `spaceId`.
 Reutiliza `SpacesService` dentro do backend, sem chamadas HTTP para a própria API.
-O frontend não faz parte desta implementação.
+O frontend consome esse catálogo, agenda, login e envio multipart. Consulte
+`frontend/reservations-integration.md` para execução e comportamento do fluxo.
 
 ## Rotas
 
 Todas as rotas usam o prefixo `/api`.
 
-O envio público (`POST /reservations`) permite cinco tentativas por IP por
+O envio autenticado (`POST /reservations`) permite cinco tentativas por IP por
 minuto, incluindo payloads inválidos. A sexta recebe 429 com Retry-After antes
 do processamento de arquivos. Não se confia em X-Forwarded-For fornecido pelo
 cliente. O armazenamento do limite é em memória por instância; escala horizontal
@@ -16,7 +17,7 @@ requer armazenamento compartilhado e configuração explícita do proxy.
 
 | Método | Rota | Acesso | Resultado |
 | --- | --- | --- | --- |
-| POST | `/reservations` | Público | Envia uma solicitação com anexos; retorna 201 |
+| POST | `/reservations` | Usuário autenticado (Bearer JWT) | Envia uma solicitação com anexos; retorna 201 |
 | GET | `/reservations/spaces/:spaceId/schedule?date=AAAA-MM-DD` | Público | Horários ocupados por reservas aprovadas, sem dados pessoais |
 | GET | `/reservations` | Administrador (Bearer JWT) | Lista paginada de solicitações |
 | GET | `/reservations/:id` | Administrador (Bearer JWT) | Dados completos e metadados dos anexos |
@@ -32,6 +33,13 @@ Filtros da listagem: `spaceId`, `date`, `status`, `page` (padrão 1), `limit`
 os campos de arquivo `oficio` (obrigatório), `projeto`, `apresentacao` e `pauta`
 (opcionais). Máximo de um arquivo por campo, 10 MB por arquivo e 64 KB no JSON.
 Não definir manualmente o boundary ao usar FormData ou cURL.
+
+Envie `Authorization: Bearer TOKEN` obtido em `/auth/login`. A autenticação
+ocorre antes do processamento dos arquivos. `userId` é definido pelo servidor a
+partir do JWT; não deve ser enviado no JSON. Os dados de `requester` são um
+retrato do solicitante neste pedido e podem diferir do perfil da conta.
+Reservas antigas mantêm `userId = null`. A exclusão de uma conta remove apenas
+esse vínculo, preservando o histórico da reserva (`ON DELETE SET NULL`).
 
 Exemplo do campo `dados` (substitua espaço, equipamentos e data por valores reais):
 
@@ -141,7 +149,9 @@ npm run build
 npm run start:prod
 ```
 
-Migration: `1794300000000-CreateReservations`. O `down` remove somente as duas
+Migrations: `1794300000000-CreateReservations` e
+`1794931200000-LinkReservationUser` (vínculo opcional de conta nos registros
+legados). O `down` da criação das reservas remove somente as duas
 tabelas novas. Backups e o limite `max_allowed_packet` do MySQL devem comportar os
 anexos de até 10 MB.
 
@@ -182,4 +192,7 @@ Para outro MySQL, provisionar um banco vazio com nome
 `NODE_ENV=production npm run test:reservations:mysql`. Esse comando exige banco
 exclusivo e vazio; não cria nem remove o banco por conta própria.
 
-E-mail, painel administrativo e integração com o frontend ficam fora desta etapa.
+O fluxo público do frontend está integrado. E-mail e painel administrativo
+continuam pendentes. O cadastro inicial dos cinco espaços do site oficial pode
+ser criado em desenvolvimento com `NODE_ENV=development npm run dev:spaces-catalog`.
+O comando preserva cadastros existentes e não presume os equipamentos de cada sala.

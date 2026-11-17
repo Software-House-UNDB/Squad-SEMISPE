@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { officialSpacePhoto } from '../../services/spaces.service';
+import { SpacesLoadState } from './SpacesLoadState';
 import { Link } from 'react-router-dom';
 import {
   AirVent,
@@ -53,7 +56,8 @@ function PhotoPlaceholder({ background }: { background: string }) {
 }
 
 function SpaceCard({ space, reservaHref, index }: { space: Space; reservaHref: string; index: number }) {
-  const photo = space.photoUrls[0];
+  const [failed, setFailed] = useState<string[]>([]);
+  const photo = [...space.photoUrls, officialSpacePhoto(space.name)].find((url): url is string => Boolean(url && !failed.includes(url)));
 
   return (
     <article className="group h-full flex flex-col rounded-2xl bg-white overflow-hidden shadow-sm ring-1 ring-semispe-blue-dark/10 transition-shadow duration-300 hover:shadow-lg hover:shadow-semispe-blue-dark/10">
@@ -61,6 +65,7 @@ function SpaceCard({ space, reservaHref, index }: { space: Space; reservaHref: s
         {photo ? (
           <img
             src={photo}
+            onError={() => setFailed((previous) => [...previous, photo])}
             alt={`Foto do espaço ${space.name}`}
             loading="lazy"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -144,6 +149,7 @@ export function SpacesOverview() {
         </ul>
       </section>
 
+      <SpacesLoadState />
       <ul className="mt-10 grid gap-5 lg:gap-6 sm:grid-cols-2 min-[85rem]:grid-cols-3">
         {vm.spaces.map((space, index) => (
           <li key={space.id}>

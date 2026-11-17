@@ -30,7 +30,11 @@ export class ReservationsService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async create(dto: CreateReservationDto, files: ReservationFiles) {
+  async create(
+    dto: CreateReservationDto,
+    files: ReservationFiles,
+    userId?: number,
+  ) {
     this.validateRequest(dto);
     const uploads = validateFiles(files);
     await this.spaces.findOne(dto.spaceId);
@@ -42,6 +46,7 @@ export class ReservationsService {
         Reservation,
         manager.create(Reservation, {
           ...dto,
+          userId: userId ?? null,
           status: ReservationStatus.PENDING,
           reviewNote: null,
           reviewedBy: null,

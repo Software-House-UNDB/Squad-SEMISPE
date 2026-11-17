@@ -108,9 +108,18 @@ describe('ReservationsController (HTTP)', () => {
     await app?.close();
   });
 
+  it('exige login antes de processar arquivos', async () => {
+    await request(app.getHttpServer())
+      .post('/api/reservations')
+      .send({})
+      .expect(401);
+    expect(service.create).not.toHaveBeenCalled();
+  });
+
   function submit(data: unknown = payload) {
     return request(app.getHttpServer())
       .post('/api/reservations')
+      .set('Authorization', `Bearer ${user}`)
       .field('dados', typeof data === 'string' ? data : JSON.stringify(data))
       .attach('oficio', pdf, 'oficio.pdf');
   }
@@ -118,19 +127,21 @@ describe('ReservationsController (HTTP)', () => {
     for (let i = 0; i < 5; i++) await submit().expect(201);
     await request(app.getHttpServer())
       .post('/api/reservations')
+      .set('Authorization', `Bearer ${user}`)
       .set('X-Forwarded-For', '203.0.113.55')
       .send({})
       .expect(429);
     expect(service.create).toHaveBeenCalledTimes(5);
   });
 
-  it('aceita multipart público e transforma o JSON com o ValidationPipe global habilitado', async () => {
+  it('aceita multipart autenticado e transforma o JSON com o ValidationPipe global habilitado', async () => {
     await submit().expect(201).expect({ id: 1, status: 'pending' });
     expect(service.create).toHaveBeenCalledWith(
       payload,
       expect.objectContaining({
         oficio: [expect.objectContaining({ buffer: pdf })],
       }),
+      2,
     );
   });
 
@@ -150,6 +161,7 @@ describe('ReservationsController (HTTP)', () => {
     { ...payload, participants: 0 },
     { ...payload, date: '2099-02-30' },
     { ...payload, startTime: '25:00' },
+    { ...payload, userId: 999 },
     { ...payload, status: 'approved' },
     { ...payload, requester: { ...payload.requester, role: 'admin' } },
     { ...payload, requester: null },
@@ -169,6 +181,7 @@ describe('ReservationsController (HTTP)', () => {
   it('rejeita dados ausentes', async () => {
     await request(app.getHttpServer())
       .post('/api/reservations')
+      .set('Authorization', `Bearer ${user}`)
       .attach('oficio', pdf, 'oficio.pdf')
       .expect(400);
   });
@@ -176,6 +189,7 @@ describe('ReservationsController (HTTP)', () => {
   it('rejeita arquivo acima de 10 MB', async () => {
     await request(app.getHttpServer())
       .post('/api/reservations')
+      .set('Authorization', `Bearer ${user}`)
       .field('dados', JSON.stringify(payload))
       .attach('oficio', Buffer.alloc(10 * 1024 * 1024 + 1), 'oficio.pdf')
       .expect(413);

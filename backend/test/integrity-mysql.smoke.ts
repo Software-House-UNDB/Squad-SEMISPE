@@ -264,6 +264,7 @@ async function main() {
     const submit = (change: Record<string, unknown> = {}) =>
       http()
         .post('/api/reservations')
+        .set(auth)
         .field('dados', JSON.stringify({ ...payload, ...change }))
         .attach('oficio', pdf, 'oficio.pdf');
     const review = (id: number, status: string) =>
@@ -419,6 +420,7 @@ async function main() {
       );
     await http()
       .post('/api/reservations')
+      .set(auth)
       .set('X-Forwarded-For', '203.0.113.88')
       .send({})
       .expect(429);

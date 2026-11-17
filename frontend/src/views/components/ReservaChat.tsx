@@ -26,7 +26,15 @@ function BotAvatar({ isHidden = false }: { isHidden?: boolean }) {
 }
 
 /** Mensagem do assistente; o avatar aparece só na última de cada sequência */
-function BotMessage({ children, showAvatar, isWide = false }: { children: React.ReactNode; showAvatar: boolean; isWide?: boolean }) {
+function BotMessage({
+  children,
+  showAvatar,
+  isWide = false,
+}: {
+  children: React.ReactNode;
+  showAvatar: boolean;
+  isWide?: boolean;
+}) {
   return (
     <div className={`flex items-end gap-2.5 ${isWide ? '' : bubbleWidthClass}`}>
       <BotAvatar isHidden={!showAvatar} />
@@ -136,9 +144,16 @@ function ReviewSummary({ vm }: { vm: ReservaViewModel }) {
 
 function ProgressStages({ stages }: { stages: ReservaViewModel['stages'] }) {
   return (
-    <ol aria-label="Etapas da reserva" className="flex items-center gap-2 overflow-x-auto px-4 sm:px-6 py-3 border-b border-semispe-blue-dark/10 [scrollbar-width:none]">
+    <ol
+      aria-label="Etapas da reserva"
+      className="flex items-center gap-2 overflow-x-auto px-4 sm:px-6 py-3 border-b border-semispe-blue-dark/10 [scrollbar-width:none]"
+    >
       {stages.map((stage, index) => (
-        <li key={stage.id} aria-current={stage.state === 'current' ? 'step' : undefined} className="flex shrink-0 items-center gap-2">
+        <li
+          key={stage.id}
+          aria-current={stage.state === 'current' ? 'step' : undefined}
+          className="flex shrink-0 items-center gap-2"
+        >
           <span
             className={`grid place-items-center w-6 h-6 rounded-full text-[11px] font-black ${
               stage.state === 'done'
@@ -150,8 +165,12 @@ function ProgressStages({ stages }: { stages: ReservaViewModel['stages'] }) {
           >
             {stage.state === 'done' ? <Check className="w-3.5 h-3.5" aria-label="concluída" /> : index + 1}
           </span>
-          <span className={`text-xs font-bold ${stage.state === 'todo' ? 'text-semispe-blue-dark/50' : ''}`}>{stage.label}</span>
-          {index < stages.length - 1 && <span className="w-5 sm:w-10 h-px bg-semispe-blue-dark/15" aria-hidden="true" />}
+          <span className={`text-xs font-bold ${stage.state === 'todo' ? 'text-semispe-blue-dark/50' : ''}`}>
+            {stage.label}
+          </span>
+          {index < stages.length - 1 && (
+            <span className="w-5 sm:w-10 h-px bg-semispe-blue-dark/15" aria-hidden="true" />
+          )}
         </li>
       ))}
     </ol>
@@ -181,13 +200,15 @@ function AccountBar({ account, onLogout }: { account: UserAccount; onLogout: () 
 export interface ReservaChatProps {
   /** Conta logada: os dados dela entram como respostas já dadas */
   account: UserAccount;
+  accessToken: string | null;
+  onSessionExpired: () => void;
   onLogout: () => void;
 }
 
 /** A solicitação de reserva em formato de conversa */
-export function ReservaChat({ account, onLogout }: ReservaChatProps) {
+export function ReservaChat({ account, accessToken, onSessionExpired, onLogout }: ReservaChatProps) {
   const estrutura = useEstruturaContext();
-  const vm = useReservaViewModel(estrutura.spaces, account);
+  const vm = useReservaViewModel(estrutura.spaces, account, accessToken, onSessionExpired);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [prefersReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
@@ -225,6 +246,14 @@ export function ReservaChat({ account, onLogout }: ReservaChatProps) {
           para caber inteiro na tela */}
       <div className="flex flex-col h-[calc(100svh-16rem)] min-h-[26rem] lg:h-[calc(100svh-66px-6rem)] lg:min-h-[32rem] rounded-2xl bg-white shadow-sm ring-1 ring-semispe-blue-dark/10 overflow-hidden">
         <AccountBar account={account} onLogout={onLogout} />
+        {!accessToken && (
+          <div role="alert" className="px-4 py-2 text-sm">
+            Sua sessão expirou. As respostas estão mantidas nesta página.{' '}
+            <button type="button" className="font-bold underline" onClick={onSessionExpired}>
+              Entrar novamente
+            </button>
+          </div>
+        )}
         <ProgressStages stages={vm.stages} />
 
         {/* `relative` prende aqui os textos só para leitor de tela (sr-only, posição absoluta):
@@ -278,22 +307,44 @@ export function ReservaChat({ account, onLogout }: ReservaChatProps) {
           </div>
         </div>
 
-        {!isTyping && (
-          <ReservaComposer
-            phase={vm.phase}
-            step={vm.composer}
-            isEditing={vm.isEditing}
-            error={vm.error}
-            consent={vm.consent}
-            isSending={vm.isSending}
-            onAnswer={vm.answer}
-            onCancelEdit={vm.cancelEdit}
-            onClearError={vm.clearError}
-            onConsentChange={vm.setConsent}
-            onSubmit={vm.submit}
-            onRestart={vm.restart}
-          />
+        {!isTyping && ['inicio', 'termino'].includes(vm.composer?.id ?? '') && (
+          <div className="px-4 py-3 text-sm" aria-live="polite">
+            {vm.scheduleLoading ? (
+              <p>Consultando disponibilidade…</p>
+            ) : vm.scheduleError ? (
+              <p role="alert">
+                Não foi possível consultar os horários.{' '}
+                <button type="button" className="underline" onClick={vm.retrySchedule}>
+                  Tentar novamente
+                </button>
+              </p>
+            ) : vm.composer?.input.kind === 'time' && vm.composer.input.slots.length === 0 ? (
+              <p>Não há horários disponíveis nesta data.</p>
+            ) : (
+              <p>Horários de São Luís (MA). Reservas aprovadas já estão descontadas.</p>
+            )}
+            <button type="button" className="font-bold underline" onClick={() => vm.startEdit('data')}>
+              Escolher outra data
+            </button>
+          </div>
         )}
+        {!isTyping &&
+          !(['inicio', 'termino'].includes(vm.composer?.id ?? '') && (vm.scheduleLoading || vm.scheduleError)) && (
+            <ReservaComposer
+              phase={vm.phase}
+              step={vm.composer}
+              isEditing={vm.isEditing}
+              error={vm.error}
+              consent={vm.consent}
+              isSending={vm.isSending}
+              onAnswer={vm.answer}
+              onCancelEdit={vm.cancelEdit}
+              onClearError={vm.clearError}
+              onConsentChange={vm.setConsent}
+              onSubmit={vm.submit}
+              onRestart={vm.restart}
+            />
+          )}
       </div>
     </div>
   );
