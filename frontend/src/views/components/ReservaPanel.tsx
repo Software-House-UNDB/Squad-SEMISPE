@@ -12,14 +12,17 @@ import { SpacesLoadState } from './SpacesLoadState';
 
 /**
  * "Fazer reserva": a reserva exige conta. Sem login, a tela pede o acesso (o
- * modal já abre ao chegar) e o chat só aparece depois de entrar.
+ * botão de acesso abre o modal) e o chat só aparece depois de entrar.
  */
 export function ReservaPanel() {
   const auth = useAuth();
-  const [modal, setModal] = useState<AuthMode | null>('entrar');
+  const [modal, setModal] = useState<AuthMode | null>(null);
   const [draftAccount, setDraftAccount] = useState<UserAccount | null>(null);
   const estrutura = useEstruturaContext();
   const account = auth.account ?? draftAccount;
+  // Após reautenticar, o rascunho fica no chat montado. Um logout posterior
+  // pelo cabeçalho deve descartá-lo, assim como o botão Sair do próprio chat.
+  if (auth.status === 'authenticated' && draftAccount !== null) setDraftAccount(null);
 
   if (account) {
     return (

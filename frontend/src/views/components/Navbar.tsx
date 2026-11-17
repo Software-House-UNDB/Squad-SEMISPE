@@ -3,6 +3,7 @@ import { Menu, X } from 'lucide-react';
 import logoParque from '../../assets/brand/logo-parque-tecnologico.png';
 import type { NavItem } from '../../models/navigation.model';
 import { BrandStripe } from './ui/BrandStripe';
+import { AccountMenu } from './AccountMenu';
 
 export interface NavbarProps {
   navItems: readonly NavItem[];
@@ -69,7 +70,7 @@ export function Navbar({
           </a>
 
           {/* Links Desktop */}
-          <nav className="hidden md:flex items-center gap-6 lg:gap-8" aria-label="Navegação principal">
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-8" aria-label="Navegação principal">
             {navItems.map((item) => {
               const isActive = activeSection === item.id;
               return (
@@ -94,11 +95,12 @@ export function Navbar({
           </nav>
 
           {/* Botão Mobile Hambúrguer */}
-          <div className="flex md:hidden">
+          <div className="flex items-center gap-2">
+            <AccountMenu />
             <button
               type="button"
               onClick={onToggleMobileMenu}
-              className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+              className="lg:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
               aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu de navegação'}
               aria-expanded={isMobileMenuOpen}
             >
@@ -113,7 +115,7 @@ export function Navbar({
         dar mais atenção nisso depois
       */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-white/10 px-4 pt-2 pb-5 space-y-1 animate-in slide-in-from-top-2 duration-150">
+        <div className="lg:hidden border-t border-white/10 px-4 pt-2 pb-5 space-y-1 animate-in slide-in-from-top-2 duration-150">
           {navItems.map((item) => (
             <a
               key={item.id}

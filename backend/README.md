@@ -50,6 +50,10 @@ a migration de correção e atualizar a aplicação.
 
 ## API de reservas
 
+O painel geral do portal está organizado em módulos. Estrutura e disponibilidade
+em [admin-panel.md](admin-panel.md); acesso local e gestão de reservas em
+[admin-reservations.md](admin-reservations.md).
+
 Contrato das rotas, exemplos multipart e regras de aprovação em
 [reservations-api.md](reservations-api.md).
 

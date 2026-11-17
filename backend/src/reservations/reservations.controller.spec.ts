@@ -38,6 +38,13 @@ describe('ReservationsController (HTTP)', () => {
     consent: true,
   };
   const service = {
+    summary: jest.fn().mockResolvedValue({
+      pending: 2,
+      approved: 1,
+      rejected: 0,
+      cancelled: 0,
+      total: 3,
+    }),
     create: jest.fn().mockResolvedValue({ id: 1, status: 'pending' }),
     schedule: jest
       .fn()
@@ -215,11 +222,22 @@ describe('ReservationsController (HTTP)', () => {
   });
 
   const routes = [
+    { method: 'get' as const, path: '/api/reservations/summary' },
     { method: 'get' as const, path: '/api/reservations' },
     { method: 'get' as const, path: '/api/reservations/1' },
     { method: 'get' as const, path: '/api/reservations/1/attachments/1' },
     { method: 'patch' as const, path: '/api/reservations/1/status' },
   ];
+
+  it('retorna resumo apenas para admin e impede armazenamento em cache', async () => {
+    await request(app.getHttpServer())
+      .get('/api/reservations/summary')
+      .set('Authorization', `Bearer ${admin}`)
+      .expect(200)
+      .expect('Cache-Control', 'no-store')
+      .expect({ pending: 2, approved: 1, rejected: 0, cancelled: 0, total: 3 });
+    expect(service.summary).toHaveBeenCalledTimes(1);
+  });
 
   it.each(routes)('protege $method $path', async ({ method, path }) => {
     const make = () => request(app.getHttpServer())[method](path);

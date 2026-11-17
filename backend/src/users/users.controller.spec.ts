@@ -142,4 +142,85 @@ describe('UsersController: autorização HTTP', () => {
       .expect(400);
     expect(service.update).not.toHaveBeenCalled();
   });
+
+  it('consulta o perfil autenticado sem id na URL e sem hash da senha', async () => {
+    await request(app.getHttpServer()).get('/api/users/me').expect(401);
+    const response = await request(app.getHttpServer())
+      .get('/api/users/me')
+      .set('Authorization', `Bearer ${userToken}`)
+      .expect(200)
+      .expect('Cache-Control', 'no-store');
+    expect(response.body).toMatchObject({ id: 2 });
+    expect(response.body).not.toHaveProperty('password');
+  });
+
+  it('atualiza os contatos somente do titular identificado pelo JWT', async () => {
+    await request(app.getHttpServer())
+      .patch('/api/users/me')
+      .send({ phone: '98999999999' })
+      .expect(401);
+    await request(app.getHttpServer())
+      .patch('/api/users/me')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({
+        phone: '98988887777',
+        email: 'NOVO@example.com',
+        institution: null,
+        cnpj: null,
+      })
+      .expect(200)
+      .expect('Cache-Control', 'no-store');
+    expect(service.update).toHaveBeenCalledWith(
+      2,
+      expect.objectContaining({
+        phone: '98988887777',
+        email: 'novo@example.com',
+        institution: null,
+        cnpj: null,
+      }),
+    );
+  });
+
+  it.each([
+    { name: 'Outro Nome' },
+    { cpf: '52998224725' },
+    { role: 'admin' },
+    { id: 1 },
+    { password: 'other123456' },
+    { email: null },
+    { phone: '123' },
+  ])('rejeita campos bloqueados ou inválidos no perfil: %j', async (body) => {
+    await request(app.getHttpServer())
+      .patch('/api/users/me')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send(body)
+      .expect(400);
+    expect(service.update).not.toHaveBeenCalled();
+  });
+
+  it.each([{ name: 'Outro Nome' }, { cpf: null }])(
+    'impede contornar a identificação bloqueada pela rota antiga: %j',
+    async (body) => {
+      await request(app.getHttpServer())
+        .patch('/api/users/2')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send(body)
+        .expect(400);
+      expect(service.update).not.toHaveBeenCalled();
+    },
+  );
+
+  it('bloqueia identificação do próprio admin e preserva a gestão administrativa de outras contas', async () => {
+    await request(app.getHttpServer())
+      .patch('/api/users/1')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ name: 'Outro Nome' })
+      .expect(400);
+    expect(service.update).not.toHaveBeenCalled();
+    await request(app.getHttpServer())
+      .patch('/api/users/2')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ name: 'Nome corrigido' })
+      .expect(200);
+  });
 });

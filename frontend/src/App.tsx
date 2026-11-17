@@ -6,6 +6,11 @@ import { SpacesOverview } from './views/components/SpacesOverview';
 import { ComingSoonPanel } from './views/components/ComingSoonPanel';
 import { AgendaPanel } from './views/components/AgendaPanel';
 import { ReservaPanel } from './views/components/ReservaPanel';
+import { AdminPage } from './views/pages/AdminPage';
+import { AdminReservationsPage } from './views/pages/AdminReservationsPage';
+import { AdminOverview } from './views/components/admin/AdminOverview';
+import { AdminPlannedModule } from './views/components/admin/AdminPlannedModule';
+import { ProfilePage } from './views/pages/ProfilePage';
 
 export default function App() {
   return (
@@ -13,6 +18,12 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/quem-somos" element={<QuemSomosPage />} />
+        <Route path="/meus-dados" element={<ProfilePage />} />
+        <Route path="/admin" element={<AdminPage />}>
+          <Route index element={<AdminOverview />} />
+          <Route path="reservas" element={<AdminReservationsPage />} />
+          <Route path=":moduleId" element={<AdminPlannedModule />} />
+        </Route>
         <Route path="/estrutura" element={<EstruturaPage />}>
           <Route index element={<SpacesOverview />} />
           <Route path="agenda" element={<AgendaPanel />} />

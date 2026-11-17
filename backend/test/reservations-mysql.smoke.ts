@@ -172,6 +172,23 @@ async function main(): Promise<void> {
       .attach('pauta', pdf, 'pauta.pdf')
       .expect(201);
     const id = idOf(first);
+    await http().get('/api/reservations/summary').expect(401);
+    await http()
+      .get('/api/reservations/summary')
+      .set('Authorization', `Bearer ${user}`)
+      .expect(403);
+    const initialSummary = await http()
+      .get('/api/reservations/summary')
+      .set(auth)
+      .expect(200)
+      .expect('Cache-Control', 'no-store');
+    assert.deepEqual(initialSummary.body, {
+      pending: 1,
+      approved: 0,
+      rejected: 0,
+      cancelled: 0,
+      total: 1,
+    });
     assert.deepEqual(Object.keys(first.body as object).sort(), [
       'createdAt',
       'id',
@@ -194,11 +211,14 @@ async function main(): Promise<void> {
       .set(auth)
       .expect(200);
     const stored = detail.body as {
+      space: { id: number; name: string };
       userId: number;
       requester: typeof payload.requester;
       attachments: { id: number; content?: unknown }[];
     };
     assert.deepEqual(stored.requester, payload.requester);
+    assert.equal(stored.space.id, spaceId);
+    assert.equal(stored.space.name, 'Sala de integração isolada');
     assert.equal(stored.userId, userId);
     assert.equal(stored.attachments.length, 4);
     assert.ok(
@@ -230,6 +250,17 @@ async function main(): Promise<void> {
       [200, 409],
     );
     const approvedId = outcomes[0].status === 200 ? id : secondId;
+    const analyzedSummary = await http()
+      .get('/api/reservations/summary')
+      .set(auth)
+      .expect(200);
+    assert.deepEqual(analyzedSummary.body, {
+      pending: 1,
+      approved: 1,
+      rejected: 0,
+      cancelled: 0,
+      total: 2,
+    });
     const waitingId = approvedId === id ? secondId : id;
     assert.equal(
       await db
@@ -257,6 +288,10 @@ async function main(): Promise<void> {
       .set(auth)
       .expect(200);
     assert.equal((list.body as { total: number }).total, 2);
+    assert.equal(
+      (list.body as { items: { space: { id: number } }[] }).items[0].space.id,
+      spaceId,
+    );
     assert.equal((list.body as { items: unknown[] }).items.length, 1);
     console.log(
       'Concorrência: apenas uma aprovação; sobreposição 409, horário adjacente e liberação por cancelamento OK.',

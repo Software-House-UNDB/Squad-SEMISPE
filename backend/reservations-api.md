@@ -20,12 +20,17 @@ requer armazenamento compartilhado e configuração explícita do proxy.
 | POST | `/reservations` | Usuário autenticado (Bearer JWT) | Envia uma solicitação com anexos; retorna 201 |
 | GET | `/reservations/spaces/:spaceId/schedule?date=AAAA-MM-DD` | Público | Horários ocupados por reservas aprovadas, sem dados pessoais |
 | GET | `/reservations` | Administrador (Bearer JWT) | Lista paginada de solicitações |
+| GET | `/reservations/summary` | Administrador (Bearer JWT) | Contagem geral por status e total |
 | GET | `/reservations/:id` | Administrador (Bearer JWT) | Dados completos e metadados dos anexos |
 | PATCH | `/reservations/:id/status` | Administrador (Bearer JWT) | Aprova, rejeita ou cancela |
 | GET | `/reservations/:id/attachments/:attachmentId` | Administrador (Bearer JWT) | Download do anexo vinculado à reserva |
 
 Filtros da listagem: `spaceId`, `date`, `status`, `page` (padrão 1), `limit`
 (padrão 20, máximo 100). Resposta: `{ items, total, page, limit }`.
+
+Listagem e detalhe incluem o cadastro atual de `space`. As respostas administrativas
+usam `Cache-Control: no-store`. O painel de análise e seu escopo estão documentados
+em [admin-reservations.md](admin-reservations.md).
 
 ## Envio multipart
 
@@ -192,7 +197,7 @@ Para outro MySQL, provisionar um banco vazio com nome
 `NODE_ENV=production npm run test:reservations:mysql`. Esse comando exige banco
 exclusivo e vazio; não cria nem remove o banco por conta própria.
 
-O fluxo público do frontend está integrado. E-mail e painel administrativo
-continuam pendentes. O cadastro inicial dos cinco espaços do site oficial pode
+O fluxo público e o painel de análise de reservas estão integrados ao frontend.
+E-mail e administração dos demais módulos continuam pendentes. O cadastro inicial dos cinco espaços do site oficial pode
 ser criado em desenvolvimento com `NODE_ENV=development npm run dev:spaces-catalog`.
 O comando preserva cadastros existentes e não presume os equipamentos de cada sala.

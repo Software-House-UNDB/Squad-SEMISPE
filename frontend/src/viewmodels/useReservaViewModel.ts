@@ -730,6 +730,7 @@ export interface ReservaViewModel {
   consent: boolean;
   isSending: boolean;
   scheduleLoading: boolean;
+  scheduleDateLabel: string;
   scheduleError: boolean;
   retrySchedule: () => void;
   answer: (value: AnswerValue) => void;
@@ -997,6 +998,7 @@ export function useReservaViewModel(
     consent,
     isSending,
     scheduleLoading: availability.isFetching,
+    scheduleDateLabel: date ? fromIsoDate(date).toLocaleDateString('pt-BR') : '',
     scheduleError: availability.isError,
     retrySchedule: () => void availability.refetch(),
     answer,
