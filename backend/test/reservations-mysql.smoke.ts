@@ -101,9 +101,11 @@ async function main(): Promise<void> {
       .expect(200);
     const admin = (adminLogin.body as { accessToken: string }).accessToken;
     const user = (userLogin.body as { accessToken: string }).accessToken;
+    const userId = (userLogin.body as { user: { id: number } }).user.id;
     assert.ok(admin);
     assert.ok(user);
     const auth = { Authorization: `Bearer ${admin}` };
+    await http().post('/api/reservations').send({}).expect(401);
     const createdSpace = await http()
       .post('/api/spaces')
       .set(auth)
@@ -144,6 +146,7 @@ async function main(): Promise<void> {
         .onApplicationShutdown();
       return http()
         .post('/api/reservations')
+        .set('Authorization', `Bearer ${user}`)
         .field('dados', JSON.stringify({ ...payload, ...change }))
         .attach('oficio', content, 'oficio.pdf');
     };
@@ -157,6 +160,7 @@ async function main(): Promise<void> {
 
     await http()
       .post('/api/reservations')
+      .set('Authorization', `Bearer ${user}`)
       .field('dados', JSON.stringify(payload))
       .expect(400);
     await submit({}, Buffer.from('invalid file')).expect(400);
@@ -190,10 +194,12 @@ async function main(): Promise<void> {
       .set(auth)
       .expect(200);
     const stored = detail.body as {
+      userId: number;
       requester: typeof payload.requester;
       attachments: { id: number; content?: unknown }[];
     };
     assert.deepEqual(stored.requester, payload.requester);
+    assert.equal(stored.userId, userId);
     assert.equal(stored.attachments.length, 4);
     assert.ok(
       stored.attachments.every((attachment) => !('content' in attachment)),
@@ -289,6 +295,7 @@ async function main(): Promise<void> {
       app.useLogger(false);
       await http()
         .post('/api/reservations')
+        .set('Authorization', `Bearer ${user}`)
         .field('dados', JSON.stringify({ ...payload, date: '2099-06-21' }))
         .attach('oficio', pdf, 'rollback.pdf')
         .expect(500);
@@ -319,6 +326,17 @@ async function main(): Promise<void> {
     // Conexão independente confirma que os dados estão efetivamente persistidos.
     assert.ok(
       await dataSource.getRepository(Reservation).findOneBy({ id: largeId }),
+    );
+    const reservationCount = await db.getRepository(Reservation).count();
+    await users.delete(userId);
+    const preserved = await db
+      .getRepository(Reservation)
+      .findOneByOrFail({ id });
+    assert.equal(preserved.userId, null);
+    assert.deepEqual(preserved.requester, payload.requester);
+    assert.equal(await db.getRepository(Reservation).count(), reservationCount);
+    console.log(
+      'Vínculo de conta: ID derivado do JWT e histórico preservado após exclusão da conta.',
     );
     console.log(`Integração completa aprovada no banco isolado ${database}.`);
   } finally {

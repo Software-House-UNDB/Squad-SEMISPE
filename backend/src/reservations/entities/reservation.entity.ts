@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 import { Space } from '../../spaces/entities/space.entity';
 
 export enum ReservationStatus {
@@ -36,6 +37,17 @@ export interface ReservationRequester {
 export class Reservation {
   @PrimaryGeneratedColumn()
   id: number;
+
+  // Reservas anteriores à integração permanecem sem vínculo de conta.
+  @Column({ type: 'int', nullable: true })
+  userId: number | null;
+
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({
+    name: 'userId',
+    foreignKeyConstraintName: 'FK_reservations_user',
+  })
+  user: User | null;
 
   @Column()
   spaceId: number;

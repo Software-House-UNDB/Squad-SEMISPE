@@ -39,7 +39,7 @@ export class ReservationsController {
   constructor(private readonly reservations: ReservationsService) {}
 
   @Post()
-  @UseGuards(ThrottlerGuard)
+  @UseGuards(JwtAuthGuard, ThrottlerGuard)
   @UseInterceptors(
     FileFieldsInterceptor(
       Object.values(AttachmentKind).map((name) => ({ name, maxCount: 1 })),
@@ -59,8 +59,9 @@ export class ReservationsController {
     @Body('dados', ParseReservationPipe)
     dto: Pick<CreateReservationDto, keyof CreateReservationDto>,
     @UploadedFiles() files: ReservationFiles,
+    @Req() request: { user: AuthenticatedUser },
   ) {
-    return this.reservations.create(dto, files);
+    return this.reservations.create(dto, files, request.user.userId);
   }
 
   @Get('spaces/:spaceId/schedule')

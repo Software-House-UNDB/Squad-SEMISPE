@@ -2,8 +2,8 @@
 export type RequesterType = 'pessoa-fisica' | 'instituicao';
 
 /**
- * Solicitação de reserva enviada ao backend (formato proposto para o endpoint
- * de reservas, que ainda não existe). Os arquivos vão juntos, em multipart.
+ * Solicitação enviada a POST /api/reservations. Os arquivos vão em multipart,
+ * junto do JSON em dados e do Bearer JWT no cabeçalho Authorization.
  */
 export interface ReservationRequest {
   requester: {
@@ -47,14 +47,6 @@ export const EVENT_TYPES: readonly string[] = [
   'Hackathon',
   'Evento institucional',
   'Outro',
-];
-
-/** Equipamentos do formulário atual de reservas, usados enquanto o espaço não tem a lista própria */
-export const DEFAULT_EQUIPMENT: readonly string[] = [
-  'Tela interativa 65"',
-  'Caixa de som',
-  'Microfones',
-  'Câmera de videoconferência',
 ];
 
 /** Formatos aceitos nos anexos: PDF, Word, PowerPoint e imagem */

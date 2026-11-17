@@ -6,6 +6,9 @@ import { type AuthMode } from '../../viewmodels/useAuthModalViewModel';
 import { AuthModal } from './AuthModal';
 import { ReservaChat } from './ReservaChat';
 import { primaryButtonClass, secondaryButtonClass } from './ui/formStyles';
+import type { UserAccount } from '../../models/auth.model';
+import { useEstruturaContext } from '../../viewmodels/useEstruturaViewModel';
+import { SpacesLoadState } from './SpacesLoadState';
 
 /**
  * "Fazer reserva": a reserva exige conta. Sem login, a tela pede o acesso (o
@@ -14,19 +17,38 @@ import { primaryButtonClass, secondaryButtonClass } from './ui/formStyles';
 export function ReservaPanel() {
   const auth = useAuth();
   const [modal, setModal] = useState<AuthMode | null>('entrar');
+  const [draftAccount, setDraftAccount] = useState<UserAccount | null>(null);
+  const estrutura = useEstruturaContext();
+  const account = auth.account ?? draftAccount;
 
-  if (auth.status === 'authenticated') {
+  if (account) {
     return (
-      <ReservaChat
-        // Outra conta começa uma conversa nova
-        key={auth.account.id}
-        account={auth.account}
-        onLogout={() => {
-          // Quem saiu de propósito não recebe o modal de novo na mesma hora
-          setModal(null);
-          auth.logout();
-        }}
-      />
+      <>
+        {estrutura.spaces.length ? (
+          <ReservaChat
+            // Outra conta começa uma conversa nova
+            key={account.id}
+            account={account}
+            accessToken={auth.accessToken}
+            onSessionExpired={() => {
+              setDraftAccount(account);
+              auth.logout();
+              setModal('entrar');
+            }}
+            onLogout={() => {
+              // Quem saiu de propósito não recebe o modal de novo na mesma hora
+              setModal(null);
+              setDraftAccount(null);
+              auth.logout();
+            }}
+          />
+        ) : (
+          <SpacesLoadState />
+        )}
+        {auth.status === 'anonymous' && modal && (
+          <AuthModal initialMode={modal} onClose={() => setModal(null)} onSuccess={() => setModal(null)} />
+        )}
+      </>
     );
   }
 
@@ -41,13 +63,16 @@ export function ReservaPanel() {
           </p>
         ) : (
           <>
-            <span className="mx-auto grid place-items-center w-14 h-14 rounded-full bg-semispe-yellow-soft" aria-hidden="true">
+            <span
+              className="mx-auto grid place-items-center w-14 h-14 rounded-full bg-semispe-yellow-soft"
+              aria-hidden="true"
+            >
               <img src={simboloParque} alt="" className="w-8 h-8 object-contain" />
             </span>
             <h2 className="mt-5 text-2xl font-black tracking-tight">Entre na sua conta para reservar</h2>
             <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-semispe-blue-dark/75">
-              O assistente usa os dados da sua conta (nome, e-mail, telefone, CPF ou CNPJ e instituição) para
-              preencher a solicitação. Assim você não precisa digitar tudo de novo.
+              O assistente usa os dados da sua conta (nome, e-mail, telefone, CPF ou CNPJ e instituição) para preencher
+              a solicitação. Assim você não precisa digitar tudo de novo.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <button type="button" onClick={() => setModal('entrar')} className={primaryButtonClass}>

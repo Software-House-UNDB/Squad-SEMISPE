@@ -6,8 +6,8 @@ export interface Space {
   id: number;
   name: string;
   description: string | null;
-  /** Lotação máxima, em pessoas (null só no conteúdo provisório, enquanto não informada) */
-  capacity: number | null;
+  /** Lotação máxima cadastrada na API, em pessoas. */
+  capacity: number;
   photoUrls: string[];
   /** Equipamentos que podem ser solicitados na reserva deste espaço */
   equipment: string[];

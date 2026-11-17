@@ -1,17 +1,25 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { ApiError } from '../services/api';
+import { fetchSpaces } from '../services/spaces.service';
+import { intervalAvailable, localParkTime } from '../utils/reservationSchedule';
 import { useSearchParams } from 'react-router-dom';
 import { type UserAccount } from '../models/auth.model';
 import { type Space } from '../models/space.model';
 import {
   ACCEPTED_FILE_EXTENSIONS,
-  DEFAULT_EQUIPMENT,
   EVENT_TYPES,
   MAX_FILE_SIZE,
   type RequesterType,
   type ReservationFiles,
   type ReservationRequest,
 } from '../models/reservation.model';
-import { submitReservation } from '../services/reservations.service';
+import {
+  fetchSchedule,
+  type SpaceSchedule,
+  type ReservationReceipt,
+  submitReservation,
+} from '../services/reservations.service';
 import {
   formatCnpj,
   formatCpf,
@@ -23,7 +31,6 @@ import {
   minutesToTime,
   onlyDigits,
   timeToMinutes,
-  toIsoDate,
 } from '../utils/formatters';
 import { isValidCnpj, isValidCpf, isValidEmail, isValidPhone } from '../utils/validators';
 import { cleanInstitution, cleanName, cleanShortAnswer, extractEmail, looksLikeName } from '../utils/answerCleanup';
@@ -44,7 +51,6 @@ export type ReservaStepId =
   | 'inicio'
   | 'termino'
   | 'participantes'
-  | 'capacidade'
   | 'tipoEvento'
   | 'tipoEventoOutro'
   | 'equipamentos'
@@ -94,6 +100,7 @@ interface StepContext {
   today: string;
   /** Agora, em minutos desde a meia-noite */
   nowMinutes: number;
+  schedule?: SpaceSchedule;
 }
 
 type Validation = { ok: true; value: AnswerValue } | { ok: false; error: string };
@@ -129,7 +136,8 @@ const SLOT_MINUTES = 30;
 const FILE_HINT = 'PDF, Word, PowerPoint ou imagem, com até 10 MB.';
 const SCHEDULE_HINT = `Funcionamento: ${OPENING_HOURS.map((item) => `${item.days.toLowerCase()}, das ${item.hours}`).join('; ')}.`;
 const REASK_MESSAGE = 'Com essa alteração, preciso confirmar de novo:';
-const REVIEW_INTRO = 'Pronto! Confira o resumo da sua solicitação. Se precisar, use “Editar” para corrigir qualquer resposta.';
+const REVIEW_INTRO =
+  'Pronto! Confira o resumo da sua solicitação. Se precisar, use “Editar” para corrigir qualquer resposta.';
 
 const STAGES: readonly { id: ReservaStage; label: string }[] = [
   { id: 'dados', label: 'Seus dados' },
@@ -145,9 +153,8 @@ const fail = (error: string): Validation => ({ ok: false, error });
 
 const selectedSpace = (ctx: StepContext) => ctx.spaces.find((space) => space.id === ctx.answers.espaco) ?? null;
 
-/** O chat oferece os equipamentos do espaço; sem lista própria, os do formulário atual */
-const equipmentFor = (space: Space | null) =>
-  space && space.equipment.length > 0 ? space.equipment : DEFAULT_EQUIPMENT;
+/** Apenas equipamentos cadastrados para o espaço. */
+const equipmentFor = (space: Space | null) => space?.equipment ?? [];
 
 const hoursOn = (isoDate: string) => BUSINESS_HOURS[fromIsoDate(isoDate).getDay()] ?? null;
 
@@ -159,7 +166,12 @@ function startSlots(ctx: StepContext): string[] {
   const earliest = date === ctx.today ? ctx.nowMinutes : 0;
   const slots: string[] = [];
   for (let minutes = hours.open; minutes <= hours.close - SLOT_MINUTES; minutes += SLOT_MINUTES) {
-    if (minutes > earliest) slots.push(minutesToTime(minutes));
+    const start = minutesToTime(minutes);
+    if (
+      minutes > earliest &&
+      (!ctx.schedule || intervalAvailable(ctx.schedule, start, minutesToTime(minutes + SLOT_MINUTES)))
+    )
+      slots.push(start);
   }
   return slots;
 }
@@ -172,7 +184,8 @@ function endSlots(ctx: StepContext): string[] {
   if (!hours || !start) return [];
   const slots: string[] = [];
   for (let minutes = timeToMinutes(start) + SLOT_MINUTES; minutes <= hours.close; minutes += SLOT_MINUTES) {
-    slots.push(minutesToTime(minutes));
+    const end = minutesToTime(minutes);
+    if (!ctx.schedule || intervalAvailable(ctx.schedule, start, end)) slots.push(end);
   }
   return slots;
 }
@@ -213,11 +226,6 @@ const REQUESTER_OPTIONS: readonly ChoiceOption[] = [
 
 const EVENT_OPTIONS: readonly ChoiceOption[] = EVENT_TYPES.map((type) => ({ value: type, label: type }));
 
-const CAPACITY_OPTIONS: readonly ChoiceOption[] = [
-  { value: 'seguir', label: 'Seguir assim mesmo' },
-  { value: 'trocar', label: 'Trocar de espaço' },
-];
-
 const YES_NO_OPTIONS: readonly ChoiceOption[] = [
   { value: 'sim', label: 'Sim' },
   { value: 'nao', label: 'Não' },
@@ -233,12 +241,20 @@ const STEPS: readonly StepDef[] = [
       'Olá! Sou o assistente de reservas do Parque Tecnológico de São Luís. Vou fazer algumas perguntas para montar a sua solicitação. Leva poucos minutos.',
       'Para começar, qual é o seu nome completo? Escreva só o nome.',
     ],
-    input: () => ({ kind: 'text', type: 'text', placeholder: 'Ex.: Maria Silva', maxLength: 120, autoComplete: 'name' }),
+    input: () => ({
+      kind: 'text',
+      type: 'text',
+      placeholder: 'Ex.: Maria Silva',
+      maxLength: 120,
+      autoComplete: 'name',
+    }),
     validate: (raw) => {
       // "meu nome é vitor cruz" vira "Vitor Cruz"; o que ainda parecer frase é recusado
       const name = cleanName(text(raw));
       if (!looksLikeName(name)) return fail('Digite só o seu nome completo, por exemplo: Maria Silva.');
-      return name.split(' ').length >= 2 && name.length >= 5 ? ok(name) : fail('Digite o nome completo, com sobrenome.');
+      return name.split(' ').length >= 2 && name.length >= 5
+        ? ok(name)
+        : fail('Digite o nome completo, com sobrenome.');
     },
     display: (value) => text(value),
     fromAccount: (account) => account.name.trim() || undefined,
@@ -281,7 +297,9 @@ const STEPS: readonly StepDef[] = [
       format: formatPhone,
     }),
     validate: (raw) =>
-      isValidPhone(text(raw)) ? ok(onlyDigits(text(raw))) : fail('Informe o telefone com DDD, por exemplo (98) 99999-9999.'),
+      isValidPhone(text(raw))
+        ? ok(onlyDigits(text(raw)))
+        : fail('Informe o telefone com DDD, por exemplo (98) 99999-9999.'),
     display: (value) => formatPhone(text(value)),
     fromAccount: (account) => (account.phone && isValidPhone(account.phone) ? onlyDigits(account.phone) : undefined),
   },
@@ -339,7 +357,8 @@ const STEPS: readonly StepDef[] = [
       inputMode: 'numeric',
       format: formatCnpj,
     }),
-    validate: (raw) => (isValidCnpj(text(raw)) ? ok(onlyDigits(text(raw))) : fail('Esse CNPJ não é válido. Confira os números.')),
+    validate: (raw) =>
+      isValidCnpj(text(raw)) ? ok(onlyDigits(text(raw))) : fail('Esse CNPJ não é válido. Confira os números.'),
     display: (value) => formatCnpj(text(value)),
     // O cadastro só confere a quantidade de dígitos; a reserva confere o dígito verificador
     fromAccount: (account) => (account.cnpj && isValidCnpj(account.cnpj) ? onlyDigits(account.cnpj) : undefined),
@@ -350,8 +369,15 @@ const STEPS: readonly StepDef[] = [
     label: 'CPF',
     isActive: (ctx) => ctx.answers.tipoSolicitante === 'pessoa-fisica',
     prompts: () => ['Qual é o seu CPF?'],
-    input: () => ({ kind: 'text', type: 'text', placeholder: '000.000.000-00', inputMode: 'numeric', format: formatCpf }),
-    validate: (raw) => (isValidCpf(text(raw)) ? ok(onlyDigits(text(raw))) : fail('Esse CPF não é válido. Confira os números.')),
+    input: () => ({
+      kind: 'text',
+      type: 'text',
+      placeholder: '000.000.000-00',
+      inputMode: 'numeric',
+      format: formatCpf,
+    }),
+    validate: (raw) =>
+      isValidCpf(text(raw)) ? ok(onlyDigits(text(raw))) : fail('Esse CPF não é válido. Confira os números.'),
     display: (value) => formatCpf(text(value)),
     fromAccount: (account) => (account.cpf && isValidCpf(account.cpf) ? onlyDigits(account.cpf) : undefined),
   },
@@ -382,8 +408,9 @@ const STEPS: readonly StepDef[] = [
       const date = text(raw);
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return fail('Escolha uma data.');
       if (date < ctx.today) return fail('Escolha uma data a partir de hoje.');
-      if (!hoursOn(date)) return fail('O Parque não funciona aos sábados e domingos. Escolha um dia de segunda a sexta.');
-      if (startSlots({ ...ctx, answers: { ...ctx.answers, data: date } }).length === 0) {
+      if (!hoursOn(date))
+        return fail('O Parque não funciona aos sábados e domingos. Escolha um dia de segunda a sexta.');
+      if (startSlots({ ...ctx, schedule: undefined, answers: { ...ctx.answers, data: date } }).length === 0) {
         return fail('Hoje não há mais horários disponíveis. Escolha outra data.');
       }
       return ok(date);
@@ -394,7 +421,8 @@ const STEPS: readonly StepDef[] = [
     id: 'inicio',
     stage: 'reserva',
     label: 'Início',
-    dependsOn: ['data'],
+    dependsOn: ['data', 'espaco'],
+    resetWithDependencies: true,
     prompts: () => ['Que horas começa?'],
     input: (ctx) => {
       const hours = hoursOn(text(ctx.answers.data));
@@ -403,27 +431,38 @@ const STEPS: readonly StepDef[] = [
         : SCHEDULE_HINT;
       return { kind: 'time', slots: startSlots(ctx), hint };
     },
-    validate: (raw, ctx) => (startSlots(ctx).includes(text(raw)) ? ok(raw) : fail('Escolha um dos horários disponíveis.')),
+    validate: (raw, ctx) =>
+      startSlots(ctx).includes(text(raw)) ? ok(raw) : fail('Escolha um dos horários disponíveis.'),
     display: (value) => formatTime(text(value)),
   },
   {
     id: 'termino',
     stage: 'reserva',
     label: 'Término',
-    dependsOn: ['data', 'inicio'],
+    dependsOn: ['data', 'inicio', 'espaco'],
+    resetWithDependencies: true,
     prompts: () => ['E que horas termina?'],
-    input: (ctx) => ({ kind: 'time', slots: endSlots(ctx), hint: 'O término precisa ser depois do início, dentro do funcionamento.' }),
-    validate: (raw, ctx) => (endSlots(ctx).includes(text(raw)) ? ok(raw) : fail('Escolha um dos horários disponíveis.')),
+    input: (ctx) => ({
+      kind: 'time',
+      slots: endSlots(ctx),
+      hint: 'O término precisa ser depois do início, dentro do funcionamento.',
+    }),
+    validate: (raw, ctx) =>
+      endSlots(ctx).includes(text(raw)) ? ok(raw) : fail('Escolha um dos horários disponíveis.'),
     display: (value) => formatTime(text(value)),
   },
   {
     id: 'participantes',
     stage: 'reserva',
     label: 'Participantes',
+    dependsOn: ['espaco'],
     prompts: () => ['Quantas pessoas devem participar?'],
     input: () => ({ kind: 'number', placeholder: 'Número de participantes' }),
-    validate: (raw) => {
+    validate: (raw, ctx) => {
       const count = Number(raw);
+      const capacity = selectedSpace(ctx)?.capacity;
+      if (capacity && count > capacity)
+        return fail(`Este espaço comporta até ${capacity} pessoas. Reduza a quantidade ou edite o espaço.`);
       return Number.isInteger(count) && count >= 1 && count <= 100_000
         ? ok(count)
         : fail('Informe o número de participantes, só com algarismos.');
@@ -434,28 +473,6 @@ const STEPS: readonly StepDef[] = [
       const over = capacity && count > capacity ? ' (acima da capacidade do espaço)' : '';
       return `${count} ${count === 1 ? 'pessoa' : 'pessoas'}${over}`;
     },
-  },
-  {
-    // A reserva passa por aprovação: acima da capacidade, sugere trocar de espaço mas deixa seguir
-    id: 'capacidade',
-    stage: 'reserva',
-    label: 'Capacidade',
-    isActive: (ctx) => {
-      const capacity = selectedSpace(ctx)?.capacity;
-      return Boolean(capacity && Number(ctx.answers.participantes) > capacity);
-    },
-    dependsOn: ['espaco', 'participantes'],
-    resetWithDependencies: true,
-    hiddenInSummary: true,
-    prompts: (ctx) => {
-      const space = selectedSpace(ctx);
-      return [
-        `O espaço ${space?.name} comporta até ${space?.capacity} pessoas, e você informou ${Number(ctx.answers.participantes)}. Como a solicitação ainda passa por aprovação, você pode seguir assim mesmo ou trocar de espaço.`,
-      ];
-    },
-    input: () => ({ kind: 'choice', options: CAPACITY_OPTIONS }),
-    validate: (raw) => validateChoice(raw, CAPACITY_OPTIONS),
-    display: (value) => labelOf(CAPACITY_OPTIONS, value),
   },
   {
     id: 'tipoEvento',
@@ -524,7 +541,9 @@ const STEPS: readonly StepDef[] = [
     }),
     validate: (raw) => {
       const subject = text(raw).trim();
-      return subject.length >= 10 ? ok(subject) : fail('Conte um pouco mais sobre o evento (pelo menos 10 caracteres).');
+      return subject.length >= 10
+        ? ok(subject)
+        : fail('Conte um pouco mais sobre o evento (pelo menos 10 caracteres).');
     },
     display: (value) => text(value),
   },
@@ -631,13 +650,11 @@ function accountIntro(account: UserAccount): string[] {
 }
 
 function buildContext(answers: Answers, spaces: readonly Space[], suggestedSpace: Space | null): StepContext {
-  const now = new Date();
   return {
     answers,
     spaces,
     suggestedSpace,
-    today: toIsoDate(now),
-    nowMinutes: now.getHours() * 60 + now.getMinutes(),
+    ...localParkTime(),
   };
 }
 
@@ -712,6 +729,9 @@ export interface ReservaViewModel {
   error: string | null;
   consent: boolean;
   isSending: boolean;
+  scheduleLoading: boolean;
+  scheduleError: boolean;
+  retrySchedule: () => void;
   answer: (value: AnswerValue) => void;
   startEdit: (id: ReservaStepId) => void;
   cancelEdit: () => void;
@@ -726,12 +746,15 @@ export interface ReservaViewModel {
  * Quem chega aqui já está logado: os dados da conta entram como respostas já
  * dadas, que podem ser editadas só para esta reserva (a conta não muda).
  */
-export function useReservaViewModel(spaces: readonly Space[], account: UserAccount): ReservaViewModel {
+export function useReservaViewModel(
+  spaces: readonly Space[],
+  account: UserAccount,
+  accessToken: string | null,
+  onSessionExpired: () => void
+): ReservaViewModel {
   const [searchParams] = useSearchParams();
-
-  // Vindo do cartão de um espaço (?espaco=id), o chat já sugere esse espaço
-  const suggestedSpace = spaces.find((space) => space.id === Number(searchParams.get('espaco'))) ?? null;
-
+  const suggestedId = Number(searchParams.get('espaco'));
+  const suggestedSpace = spaces.find((space) => space.id === suggestedId) ?? null;
   const [initial] = useState(() => prefill(account, buildContext({}, spaces, suggestedSpace)));
   const [answers, setAnswers] = useState<Answers>(initial.answers);
   const [order, setOrder] = useState<ReservaStepId[]>(initial.order);
@@ -742,8 +765,19 @@ export function useReservaViewModel(spaces: readonly Space[], account: UserAccou
   const [error, setError] = useState<string | null>(null);
   const [consent, setConsentState] = useState(false);
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
+  const [receipt, setReceipt] = useState<ReservationReceipt | null>(null);
+  const sending = useRef(false);
+  const spaceId = Number(answers.espaco);
+  const date = text(answers.data);
+  const availability = useQuery({
+    queryKey: ['schedule', spaceId, date],
+    queryFn: ({ signal }) => fetchSchedule(spaceId, date, signal),
+    enabled: Boolean(spaceId && date),
+    staleTime: 0,
+    refetchInterval: 30_000,
+  });
 
-  const ctx = buildContext(answers, spaces, suggestedSpace);
+  const ctx = { ...buildContext(answers, spaces, suggestedSpace), schedule: availability.data };
   // A saudação abre a conversa, junto do primeiro dado da conta
   const introStep = initial.order[0] ?? null;
 
@@ -770,7 +804,8 @@ export function useReservaViewModel(spaces: readonly Space[], account: UserAccou
     pending = {
       key: 'enviado',
       messages: [
-        `Solicitação enviada! A SEMISPE vai analisar o pedido e responder no e-mail ${text(answers.email)}.`,
+        `Solicitação enviada! Protocolo: ${receipt?.id}.`,
+        'Seu pedido está pendente de análise pela SEMISPE. O envio não confirma a reserva do espaço.',
         'Obrigado por escolher o Parque Tecnológico de São Luís.',
       ],
     };
@@ -824,6 +859,13 @@ export function useReservaViewModel(spaces: readonly Space[], account: UserAccou
   const answer = (raw: AnswerValue) => {
     const step = editingStep ?? pendingStep;
     if (!step || isSending) return;
+    if (
+      ['inicio', 'termino'].includes(step.id) &&
+      (availability.isFetching || availability.isError || !availability.data)
+    ) {
+      setError('Aguarde a consulta de disponibilidade e tente novamente.');
+      return;
+    }
 
     const result = step.validate(raw, ctx);
     if (!result.ok) {
@@ -831,12 +873,6 @@ export function useReservaViewModel(spaces: readonly Space[], account: UserAccou
       return;
     }
     setError(null);
-
-    // "Trocar de espaço" reabre a escolha do espaço no lugar da resposta antiga
-    if (step.id === 'capacidade' && result.value === 'trocar') {
-      setEditing('espaco');
-      return;
-    }
 
     const next: Answers = { ...answers, [step.id]: result.value };
     const removed = sameValue(answers[step.id], result.value) ? [] : invalidateDependents(step.id, next, ctx);
@@ -871,21 +907,65 @@ export function useReservaViewModel(spaces: readonly Space[], account: UserAccou
   };
 
   const submit = async () => {
-    if (isSending || phase !== 'revisao') return;
+    if (sending.current || phase !== 'revisao' || editing) return;
+    if (!accessToken) {
+      onSessionExpired();
+      return;
+    }
     if (!consent) {
       setError('Para enviar, marque a autorização de uso dos dados.');
       return;
     }
+    sending.current = true;
     setStatus('sending');
     setError(null);
     try {
+      // Reconsulta catálogo e agenda: os dados podem ter mudado durante o preenchimento.
+      const [freshSpaces, freshSchedule] = await Promise.all([fetchSpaces(), fetchSchedule(spaceId, date)]);
+      const freshContext = {
+        ...buildContext(
+          answers,
+          freshSpaces.filter((space) => space.state === 'active'),
+          suggestedSpace
+        ),
+        schedule: freshSchedule,
+      };
+      for (const step of activeSteps) {
+        const value = answers[step.id];
+        const valid =
+          value === undefined ? fail('Confirme este dado.') : step.validate(step.toRaw?.(value) ?? value, freshContext);
+        if (!valid.ok) {
+          setEditing(step.id);
+          setError(valid.error);
+          setStatus('idle');
+          return;
+        }
+      }
       const { request, files } = buildRequest(answers, consent);
-      await submitReservation(request, files);
+      const result = await submitReservation(request, files, accessToken);
+      setReceipt(result);
       setStatus('sent');
       setEditing(null);
-    } catch {
+    } catch (cause) {
       setStatus('idle');
-      setError('Não foi possível enviar a solicitação. Tente de novo em instantes.');
+      if (cause instanceof ApiError && cause.status === 401) {
+        onSessionExpired();
+        setError('Sua sessão expirou. Entre novamente para enviar. Suas respostas foram mantidas.');
+      } else if (cause instanceof ApiError && cause.status === 409) {
+        void availability.refetch();
+        setEditing('inicio');
+        setError('Esse horário acabou de ser ocupado. Escolha outro horário ou edite a data.');
+      } else if (cause instanceof ApiError && cause.status === 429) {
+        setError('Muitas tentativas de envio. Aguarde um minuto antes de tentar novamente.');
+      } else if (cause instanceof ApiError && cause.status < 500) {
+        setError(cause.message);
+      } else {
+        setError(
+          'Não foi possível confirmar o envio. Suas respostas foram mantidas. Confira a conexão antes de tentar novamente.'
+        );
+      }
+    } finally {
+      sending.current = false;
     }
   };
 
@@ -900,6 +980,7 @@ export function useReservaViewModel(spaces: readonly Space[], account: UserAccou
     setError(null);
     setConsentState(false);
     setStatus('idle');
+    setReceipt(null);
   };
 
   return {
@@ -915,6 +996,9 @@ export function useReservaViewModel(spaces: readonly Space[], account: UserAccou
     error,
     consent,
     isSending,
+    scheduleLoading: availability.isFetching,
+    scheduleError: availability.isError,
+    retrySchedule: () => void availability.refetch(),
     answer,
     startEdit,
     cancelEdit,
