@@ -1,6 +1,8 @@
-import { useSyncExternalStore } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { type LoginRequest, type RegisterRequest, type UserAccount } from '../models/auth.model';
 import { ApiError } from '../services/api';
+import type { UpdateProfileRequest } from '../models/profile.model';
 import {
   clearSession,
   fetchAccount,
@@ -8,6 +10,7 @@ import {
   login as loginRequest,
   register as registerRequest,
   saveSession,
+  updateMyProfile,
 } from '../services/auth.service';
 
 export type AuthState =
@@ -63,11 +66,12 @@ function subscribe(listener: () => void) {
 const getSnapshot = () => state;
 
 /** Entra e já busca a conta completa (o login devolve só nome, e-mail e papel) */
-async function login(request: LoginRequest): Promise<void> {
+async function login(request: LoginRequest): Promise<UserAccount> {
   const session = await loginRequest(request);
   const account = await fetchAccount(session.user.id, session.accessToken);
   saveSession({ accessToken: session.accessToken, userId: session.user.id });
   setState({ status: 'authenticated', account, accessToken: session.accessToken });
+  return account;
 }
 
 /** Cria a conta sem entrar; quem chama faz o login em seguida */
@@ -80,14 +84,38 @@ function logout(): void {
   setState(ANONYMOUS);
 }
 
+/** Atualiza o perfil sem restaurar uma sessão que tenha sido encerrada durante o envio. */
+async function updateProfile(request: UpdateProfileRequest): Promise<UserAccount> {
+  const current = state;
+  if (current.status !== 'authenticated') throw new ApiError(401, 'Entre novamente para atualizar seus dados.');
+  const account = await updateMyProfile(request, current.accessToken);
+  if (
+    state.status === 'authenticated' &&
+    state.accessToken === current.accessToken &&
+    state.account.id === account.id
+  ) {
+    setState({ ...state, account });
+  }
+  return account;
+}
+
 export type AuthViewModel = AuthState & {
   login: (request: LoginRequest) => Promise<void>;
   createAccount: (request: RegisterRequest) => Promise<void>;
   logout: () => void;
+  updateProfile: (request: UpdateProfileRequest) => Promise<UserAccount>;
 };
 
 /** Sessão do usuário: estado do login, conta carregada e as ações de entrar, cadastrar e sair */
 export function useAuth(): AuthViewModel {
   const snapshot = useSyncExternalStore(subscribe, getSnapshot);
-  return { ...snapshot, login, createAccount, logout };
+  const navigate = useNavigate();
+  const loginAndNavigate = useCallback(
+    async (request: LoginRequest): Promise<void> => {
+      const account = await login(request);
+      if (account.role === 'admin') navigate('/admin', { replace: true });
+    },
+    [navigate]
+  );
+  return { ...snapshot, login: loginAndNavigate, createAccount, logout, updateProfile };
 }

@@ -36,7 +36,7 @@ function serverMessage(data: unknown): string | null {
   return null;
 }
 
-export async function apiClient<T>(endpoint: string, { token, ...options }: ApiRequestOptions = {}): Promise<T> {
+async function apiResponse(endpoint: string, { token, ...options }: ApiRequestOptions = {}): Promise<Response> {
   const url = `${API_BASE_URL.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
 
   const headers = new Headers(options.headers || {});
@@ -50,10 +50,8 @@ export async function apiClient<T>(endpoint: string, { token, ...options }: ApiR
     headers,
   });
 
-  // O corpo só pode ser lido uma vez: lê como texto e tenta o JSON depois
-  const data = parseBody(await response.text());
-
   if (!response.ok) {
+    const data = parseBody(await response.text());
     throw new ApiError(
       response.status,
       serverMessage(data) ?? `Erro na requisição ${response.status}: ${response.statusText}`,
@@ -61,5 +59,16 @@ export async function apiClient<T>(endpoint: string, { token, ...options }: ApiR
     );
   }
 
-  return data as T;
+  return response;
+}
+
+export async function apiClient<T>(endpoint: string, options: ApiRequestOptions = {}): Promise<T> {
+  const response = await apiResponse(endpoint, options);
+  return parseBody(await response.text()) as T;
+}
+
+/** Download restrito: o JWT vai no cabeçalho, nunca no link do arquivo. */
+export async function apiDownload(endpoint: string, options: ApiRequestOptions): Promise<Blob> {
+  const response = await apiResponse(endpoint, options);
+  return response.blob();
 }

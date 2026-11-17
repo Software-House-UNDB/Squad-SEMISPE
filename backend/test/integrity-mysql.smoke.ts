@@ -158,6 +158,68 @@ async function main() {
       .expect(200);
     assert.ok(!('password' in (profile.body as object)));
     assert.ok(!('tokenVersion' in (profile.body as object)));
+    await http().get('/api/users/me').expect(401);
+    const ownProfile = await http()
+      .get('/api/users/me')
+      .set(newUserAuth)
+      .expect(200)
+      .expect('Cache-Control', 'no-store');
+    assert.equal((ownProfile.body as User).id, userId);
+    assert.ok(!('password' in (ownProfile.body as object)));
+    await http()
+      .patch('/api/users/me')
+      .set(newUserAuth)
+      .send({
+        phone: '98988887777',
+        email: 'updated-profile@example.com',
+        institution: 'Instituição de teste',
+        cnpj: null,
+      })
+      .expect(200);
+    const updatedProfile = await users.findOneByOrFail({ id: userId });
+    assert.equal(updatedProfile.phone, '98988887777');
+    assert.equal(updatedProfile.email, 'updated-profile@example.com');
+    assert.equal(updatedProfile.name, 'Teste de integridade');
+    for (const body of [
+      { name: 'Outro Nome' },
+      { cpf: '52998224725' },
+      { role: Role.ADMIN },
+      { id: admin.user.id },
+    ]) {
+      await http()
+        .patch('/api/users/me')
+        .set(newUserAuth)
+        .send(body)
+        .expect(400);
+    }
+    await http()
+      .patch(`/api/users/${userId}`)
+      .set(newUserAuth)
+      .send({ name: 'Outro Nome' })
+      .expect(400);
+    await http()
+      .patch(`/api/users/${userId}`)
+      .set(newUserAuth)
+      .send({ cpf: null })
+      .expect(400);
+    await http()
+      .patch('/api/users/me')
+      .set(newUserAuth)
+      .send({ email: 'integrity-admin@example.com' })
+      .expect(409);
+    app.get<ThrottlerStorageService>(ThrottlerStorage).onApplicationShutdown();
+    const changedEmailLogin = await login(
+      'updated-profile@example.com',
+      newPassword,
+    );
+    assert.equal(changedEmailLogin.user.id, userId);
+    await http()
+      .post('/api/auth/login')
+      .send({ email: 'integrity-user@example.com', password: newPassword })
+      .expect(401);
+    console.log(
+      'Perfil: dados persistidos, login pelo e-mail atualizado, identificação bloqueada e e-mail duplicado rejeitado.',
+    );
     await http()
       .patch(`/api/users/${userId}`)
       .set(newUserAuth)

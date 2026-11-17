@@ -1,13 +1,16 @@
 import {
   Body,
+  BadRequestException,
   ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   ParseIntPipe,
   Patch,
   Post,
+  Req,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -18,6 +21,8 @@ import { UserAccessGuard } from '../auth/guards/user-access.guard';
 import { Role } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import type { AuthenticatedUser } from '../auth/strategies/jwt.strategy';
 import { UsersService } from './users.service';
 
 @UseInterceptors(ClassSerializerInterceptor)
@@ -37,15 +42,46 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('me')
+  @Header('Cache-Control', 'no-store')
+  @UseGuards(JwtAuthGuard)
+  profile(@Req() request: { user: AuthenticatedUser }) {
+    return this.usersService.findOne(request.user.userId);
+  }
+
+  @Patch('me')
+  @Header('Cache-Control', 'no-store')
+  @UseGuards(JwtAuthGuard)
+  updateProfile(
+    @Req() request: { user: AuthenticatedUser },
+    @Body() dto: UpdateProfileDto,
+  ) {
+    return this.usersService.update(request.user.userId, dto);
+  }
+
   @Get(':id')
+  @Header('Cache-Control', 'no-store')
   @UseGuards(JwtAuthGuard, UserAccessGuard)
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
+  @Header('Cache-Control', 'no-store')
   @UseGuards(JwtAuthGuard, UserAccessGuard)
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateUserDto,
+    @Req() request: { user: AuthenticatedUser },
+  ) {
+    if (
+      (request.user.role !== Role.ADMIN || request.user.userId === id) &&
+      (dto.name !== undefined || dto.cpf !== undefined)
+    ) {
+      throw new BadRequestException(
+        'Nome e CPF não podem ser alterados pela própria conta.',
+      );
+    }
     return this.usersService.update(id, dto);
   }
 

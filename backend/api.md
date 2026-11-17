@@ -872,6 +872,9 @@ usar o IP encaminhado. Referência: https://docs.nestjs.com/security/rate-limiti
 - Nome é aparado, obrigatório e limitado a 150 caracteres; email é normalizado e limitado a 255.
 - Senha tem no mínimo oito caracteres e no máximo 72 bytes em UTF-8 (limite do bcrypt).
 - No PATCH, `name`, `email` e `password` rejeitam `null`; campos omitidos são preservados.
+  Nome e CPF não podem ser alterados pela própria conta, inclusive pela rota
+  `/users/:id`. O perfil usa GET/PATCH `/users/me`, com os campos editáveis
+  descritos em [profile.md](profile.md).
 - `institution`, `cpf`, `cnpj` e `phone` aceitam `null` para limpar dados opcionais.
 - `CreateUsers1793199600000` cria a tabela com índices únicos de email, CPF e CNPJ.
 - Aplicar migrations antes de iniciar a API em produção, com sincronização automática desativada.

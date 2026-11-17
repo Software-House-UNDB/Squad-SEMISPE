@@ -48,8 +48,10 @@ local é associada pelo nome da sala, sem presumir IDs. Não foi encontrada foto
 do Coworking no site informado; não foram inventados foto, capacidade ou cadastro.
 Renomeações de salas exigem cadastrar uma foto na API ou atualizar essa associação.
 
+O painel de análise das reservas está disponível em `/admin/reservas`, para contas
+administradoras. Consulte `backend/admin-reservations.md` para o contrato e escopo.
 Ainda dependem de definição/implementação: inventário de equipamentos por sala,
-dados oficiais do Coworking, painel administrativo e notificações por e-mail.
+dados oficiais do Coworking, demais módulos administrativos e notificações por e-mail.
 Não há sincronização com o Google Agenda legado: a agenda desta aplicação mostra
 as reservas aprovadas no próprio backend.
 

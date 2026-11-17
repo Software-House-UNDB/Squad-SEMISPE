@@ -75,11 +75,27 @@ export class ReservationsService {
     const { page, limit, ...where } = query;
     const [items, total] = await this.reservations.findAndCount({
       where,
+      relations: { space: true },
       order: { createdAt: 'DESC', id: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
     });
     return { items, total, page, limit };
+  }
+
+  async summary() {
+    const rows = await this.reservations
+      .createQueryBuilder('reservation')
+      .select('reservation.status', 'status')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('reservation.status')
+      .getRawMany<{ status: ReservationStatus; count: string }>();
+    const counts = { pending: 0, approved: 0, rejected: 0, cancelled: 0 };
+    for (const row of rows) counts[row.status] = Number(row.count);
+    return {
+      ...counts,
+      total: Object.values(counts).reduce((sum, count) => sum + count, 0),
+    };
   }
 
   async findOne(id: number) {
@@ -89,7 +105,8 @@ export class ReservationsService {
       where: { reservationId: id },
       order: { id: 'ASC' },
     });
-    return { ...reservation, attachments };
+    const space = await this.spaces.findOne(reservation.spaceId);
+    return { ...reservation, space, attachments };
   }
 
   async schedule(spaceId: number, date: string) {

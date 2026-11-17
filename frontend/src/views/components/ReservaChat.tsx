@@ -321,7 +321,7 @@ export function ReservaChat({ account, accessToken, onSessionExpired, onLogout }
             ) : vm.composer?.input.kind === 'time' && vm.composer.input.slots.length === 0 ? (
               <p>Não há horários disponíveis nesta data.</p>
             ) : (
-              <p>Horários de São Luís (MA). Reservas aprovadas já estão descontadas.</p>
+              <p>Horários disponíveis para {vm.scheduleDateLabel}</p>
             )}
             <button type="button" className="font-bold underline" onClick={() => vm.startEdit('data')}>
               Escolher outra data

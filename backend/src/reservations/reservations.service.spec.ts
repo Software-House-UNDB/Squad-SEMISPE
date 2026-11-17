@@ -62,6 +62,7 @@ describe('ReservationsService', () => {
     findOneBy: jest.fn(),
     findAndCount: jest.fn(),
     find: jest.fn(),
+    createQueryBuilder: jest.fn(),
   };
   const attachments = { findOne: jest.fn(), find: jest.fn() };
   const spaces = { findOne: jest.fn() };
@@ -296,6 +297,49 @@ describe('ReservationsService', () => {
     await expect(
       service.create(validReservation(), validFiles()),
     ).rejects.toThrow('DB failure');
+  });
+
+  it('resume o histórico com contagens numéricas e zero nos status ausentes', async () => {
+    const summaryQuery = {
+      select: jest.fn().mockReturnThis(),
+      addSelect: jest.fn().mockReturnThis(),
+      groupBy: jest.fn().mockReturnThis(),
+      getRawMany: jest.fn().mockResolvedValue([
+        { status: 'pending', count: '3' },
+        { status: 'approved', count: '2' },
+      ]),
+    };
+    reservations.createQueryBuilder.mockReturnValue(summaryQuery);
+    expect(await service.summary()).toEqual({
+      pending: 3,
+      approved: 2,
+      rejected: 0,
+      cancelled: 0,
+      total: 5,
+    });
+    expect(summaryQuery.groupBy).toHaveBeenCalledWith('reservation.status');
+  });
+
+  it('inclui sala na listagem e preserva filtros e paginação', async () => {
+    reservations.findAndCount.mockResolvedValue([[{ ...record, space }], 21]);
+    const result = await service.findAll({
+      page: 2,
+      limit: 10,
+      status: ReservationStatus.PENDING,
+    });
+    expect(result).toMatchObject({
+      total: 21,
+      page: 2,
+      limit: 10,
+      items: [{ space }],
+    });
+    expect(reservations.findAndCount).toHaveBeenCalledWith({
+      where: { status: 'pending' },
+      relations: { space: true },
+      order: { createdAt: 'DESC', id: 'DESC' },
+      skip: 10,
+      take: 10,
+    });
   });
 });
 

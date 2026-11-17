@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   Param,
   ParseIntPipe,
   Patch,
@@ -73,13 +74,23 @@ export class ReservationsController {
   }
 
   @Get()
+  @Header('Cache-Control', 'no-store')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   findAll(@Query() query: QueryReservationsDto) {
     return this.reservations.findAll(query);
   }
 
+  @Get('summary')
+  @Header('Cache-Control', 'no-store')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  summary() {
+    return this.reservations.summary();
+  }
+
   @Get(':id')
+  @Header('Cache-Control', 'no-store')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   findOne(@Param('id', ParseIntPipe) id: number) {
@@ -87,6 +98,7 @@ export class ReservationsController {
   }
 
   @Patch(':id/status')
+  @Header('Cache-Control', 'no-store')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   review(
@@ -98,6 +110,7 @@ export class ReservationsController {
   }
 
   @Get(':id/attachments/:attachmentId')
+  @Header('Cache-Control', 'no-store')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   async download(

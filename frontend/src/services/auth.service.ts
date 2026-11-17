@@ -6,6 +6,7 @@ import {
   type UserRole,
 } from '../models/auth.model';
 import { apiClient } from './api';
+import type { UpdateProfileRequest } from '../models/profile.model';
 
 /** Conta como o backend devolve (com createdAt, updatedAt…); só o que o front usa vira UserAccount */
 interface UserResponse {
@@ -45,6 +46,14 @@ export async function register(request: RegisterRequest): Promise<UserAccount> {
  */
 export async function fetchAccount(userId: number, token: string): Promise<UserAccount> {
   return toUserAccount(await apiClient<UserResponse>(`users/${userId}`, { token }));
+}
+
+export async function fetchMyProfile(token: string, signal?: AbortSignal): Promise<UserAccount> {
+  return toUserAccount(await apiClient<UserResponse>('users/me', { token, signal, cache: 'no-store' }));
+}
+
+export async function updateMyProfile(request: UpdateProfileRequest, token: string): Promise<UserAccount> {
+  return toUserAccount(await apiClient<UserResponse>('users/me', { method: 'PATCH', token, body: JSON.stringify(request) }));
 }
 
 /**
