@@ -11,6 +11,7 @@ import { AdminReservationsPage } from './views/pages/AdminReservationsPage';
 import { AdminOverview } from './views/components/admin/AdminOverview';
 import { AdminPlannedModule } from './views/components/admin/AdminPlannedModule';
 import { ProfilePage } from './views/pages/ProfilePage';
+import { BancoIdeiasPage } from './views/pages/BancoIdeiasPage';
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/quem-somos" element={<QuemSomosPage />} />
+        <Route path="/banco-de-ideias" element={<BancoIdeiasPage />} />
         <Route path="/meus-dados" element={<ProfilePage />} />
         <Route path="/admin" element={<AdminPage />}>
           <Route index element={<AdminOverview />} />
