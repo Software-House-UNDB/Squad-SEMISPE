@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { usePartners, type PartnersViewModel } from './usePartners';
 import { useLocation } from 'react-router-dom';
 import { MAIN_NAV_ITEMS, TREE_ROOT_SECTION_IDS, type NavItem } from '../models/navigation.model';
 import { useSiteNavigation } from './useSiteNavigation';
@@ -132,6 +133,8 @@ export interface HomeViewModel {
   /** Cada seção por id (o mesmo rótulo e cor dos galhos/raízes e do menu) */
   sections: Readonly<Record<string, NavItem>>;
   aboutData: AboutSectionData;
+  /** Parceiros do Parque (seção Parceiros e o card "Parceiros Estratégicos" de Indicadores) */
+  partners: PartnersViewModel;
   /** Slides do carrossel de eventos */
   eventHighlights: readonly EventHighlight[];
   activeSection: string;
@@ -205,12 +208,31 @@ export function useHomeViewModel(): HomeViewModel {
 
   const onQuemSomosClick = useCallback(() => navigateTo('/quem-somos'), [navigateTo]);
 
+  // O card "Parceiros Estratégicos" mostra quantos parceiros há de fato e leva à seção Parceiros
+  const partners = usePartners();
+  const aboutData = useMemo<AboutSectionData>(
+    () => ({
+      ...DEFAULT_ABOUT_DATA,
+      metrics: DEFAULT_ABOUT_DATA.metrics.map((metric) =>
+        metric.id === 'metric-parceiros'
+          ? {
+              ...metric,
+              value: partners.isLoading ? '…' : String(partners.total),
+              link: { href: '#parceiros', label: 'Ver parceiros' },
+            }
+          : metric
+      ),
+    }),
+    [partners.isLoading, partners.total]
+  );
+
   return {
     navItems: MAIN_NAV_ITEMS,
     treeBranches: TREE_BRANCH_ITEMS,
     treeRoots: TREE_ROOT_ITEMS,
     sections: SECTIONS,
-    aboutData: DEFAULT_ABOUT_DATA,
+    aboutData,
+    partners,
     eventHighlights: DEFAULT_EVENT_HIGHLIGHTS,
     activeSection,
     isMobileMenuOpen,

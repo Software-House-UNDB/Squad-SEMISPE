@@ -3,7 +3,8 @@ export interface ImpactMetric {
   value: string;
   label: string;
   description?: string;
-  
+  /** Link do card para a seção relacionada (ex.: "Parceiros Estratégicos" → #parceiros) */
+  link?: { href: string; label: string };
 }
 
 export interface AboutSectionData {

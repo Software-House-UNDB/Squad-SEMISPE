@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Play, Pause } from 'lucide-react';
+import { ArrowDown, Play, Pause } from 'lucide-react';
 import videoLogo from '../../assets/brand/logo-com-movimento.mp4';
 import { type AboutSectionData } from '../../models/about.model';
 import { type NavItem } from '../../models/navigation.model';
@@ -20,12 +20,14 @@ function MetricCard({
   value,
   label,
   description,
+  link,
   index,
   gridPlacement,
 }: {
   value: string;
   label: string;
   description?: string;
+  link?: { href: string; label: string };
   index: number;
   gridPlacement: string;
 }) {
@@ -37,7 +39,7 @@ function MetricCard({
   return (
     <div
       ref={ref}
-      className={`bg-black/15 backdrop-blur-md p-3.5 sm:p-4 rounded-xl border border-white/20 shadow-lg shadow-black/10 hover:bg-black/20 hover:shadow-xl hover:shadow-black/25 hover:border-semispe-yellow/60 hover:-translate-y-1.5 transition-all duration-300 ease-out flex flex-col justify-between group cursor-default relative overflow-hidden ${gridPlacement} ${
+      className={`bg-black/15 backdrop-blur-md p-3.5 sm:p-4 rounded-xl border border-white/20 shadow-lg shadow-black/10 hover:bg-black/20 hover:shadow-xl hover:shadow-black/25 hover:border-semispe-yellow/60 focus-within:border-semispe-yellow hover:-translate-y-1.5 transition-all duration-300 ease-out flex flex-col justify-between group cursor-default relative overflow-hidden ${gridPlacement} ${
         index === 4 ? 'sm:col-span-2 lg:col-span-2' : ''
       }`}
       style={{
@@ -62,6 +64,17 @@ function MetricCard({
           <p className="text-[11px] text-white/90 mt-0.5 leading-snug">
             {description}
           </p>
+        )}
+
+        {/* Card com link: o link cobre o card todo, e o texto avisa para onde ele leva */}
+        {link && (
+          <a
+            href={link.href}
+            className="mt-2 inline-flex items-center gap-1 text-[11px] font-black tracking-wider uppercase text-semispe-yellow after:absolute after:inset-0 after:content-[''] focus:outline-none focus-visible:underline"
+          >
+            {link.label}
+            <ArrowDown className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-y-0.5" aria-hidden="true" />
+          </a>
         )}
       </div>
     </div>
@@ -249,6 +262,7 @@ export function AboutSection({ data, section }: AboutSectionProps) {
                     value={metric.value}
                     label={metric.label}
                     description={metric.description}
+                    link={metric.link}
                     index={index}
                     gridPlacement={gridPlacement}
                   />
