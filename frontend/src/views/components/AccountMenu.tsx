@@ -1,16 +1,17 @@
 import { useId, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, LogIn, LogOut, UserRound } from 'lucide-react';
+import { ChevronDown, LogOut, UserRound } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../viewmodels/useAuth';
-import { AuthModal } from './AuthModal';
 
-/** Acesso à conta compartilhado pelo cabeçalho público do portal. */
+/**
+ * Menu da conta no cabeçalho público, só para quem já entrou (Meus dados e Sair).
+ * Visitantes não veem botão de entrar aqui: o login acontece na etapa de reserva.
+ */
 export function AccountMenu() {
   const auth = useAuth();
   const client = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const id = useId();
@@ -32,33 +33,8 @@ export function AccountMenu() {
       document.removeEventListener('keydown', escape);
     };
   }, [open]);
-  if (auth.status === 'checking')
-    return (
-      <span role="status" className="px-2 text-xs text-white/70">
-        Carregando conta…
-      </span>
-    );
-  if (auth.status === 'anonymous')
-    return (
-      <>
-        <button
-          type="button"
-          onClick={() => setLoginOpen(true)}
-          className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-white/20 px-3 py-2 text-xs font-bold text-white hover:bg-white/10"
-        >
-          <LogIn className="h-4 w-4" aria-hidden="true" />
-          Entrar
-        </button>
-        {loginOpen && (
-          <AuthModal
-            purpose="account"
-            initialMode="entrar"
-            onClose={() => setLoginOpen(false)}
-            onSuccess={() => setLoginOpen(false)}
-          />
-        )}
-      </>
-    );
+  // Enquanto confere a sessão ou para visitantes, o cabeçalho fica só com a navegação
+  if (auth.status !== 'authenticated') return null;
   const firstName = auth.account.name.trim().split(/\s+/)[0];
   return (
     <div

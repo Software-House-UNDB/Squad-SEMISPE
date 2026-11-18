@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AccountMenu } from './AccountMenu';
 import { useAuth } from '../../viewmodels/useAuth';
 vi.mock('../../viewmodels/useAuth', () => ({ useAuth: vi.fn() }));
-vi.mock('./AuthModal', () => ({ AuthModal: () => <p>Acesso à conta</p> }));
 const logout = vi.fn();
 beforeEach(() => {
   logout.mockReset();
@@ -55,7 +54,7 @@ it('fecha com Escape e devolve o foco ao botão da conta', () => {
   expect(screen.queryByRole('link', { name: 'Meus dados' })).toBeNull();
   expect(document.activeElement).toBe(button);
 });
-it('oferece acesso à conta para visitantes', () => {
+it('não mostra botão de entrar para visitantes (o login fica na reserva)', () => {
   vi.mocked(useAuth).mockReturnValue({
     status: 'anonymous',
     accessToken: null,
@@ -66,6 +65,5 @@ it('oferece acesso à conta para visitantes', () => {
     updateProfile: vi.fn(),
   });
   setup();
-  fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
-  expect(screen.getByText('Acesso à conta')).toBeTruthy();
+  expect(screen.queryByRole('button')).toBeNull();
 });
