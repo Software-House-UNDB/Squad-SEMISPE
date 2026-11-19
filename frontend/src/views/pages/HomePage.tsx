@@ -5,6 +5,7 @@ import { Hero } from '../components/Hero';
 import { EventsGallery } from '../components/EventsGallery';
 import { AboutSection } from '../components/AboutSection';
 import { SiteFooter } from '../components/SiteFooter';
+import { ParceirosSection } from '../components/ParceirosSection';
 
 export function HomePage() {
   // Consome a camada de ViewModel (MVVM)
@@ -40,6 +41,9 @@ export function HomePage() {
 
         {/* 4. Seção Sobre o Parque / Ecossistema — scroll reveal + stagger nos cards */}
         <AboutSection data={vm.aboutData} section={vm.sections['indicadores']} />
+
+        {/* 5. Parceiros (o card "Parceiros Estratégicos" de Indicadores leva até aqui) e Banco de Ideias */}
+        <ParceirosSection section={vm.sections['parceiros']} data={vm.partners} />
       </main>
 
       {/* 5. Rodapé Institucional */}
