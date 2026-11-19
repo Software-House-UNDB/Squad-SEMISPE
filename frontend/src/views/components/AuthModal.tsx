@@ -231,13 +231,25 @@ function RegisterFields({ vm }: { vm: AuthModalViewModel }) {
 }
 
 export interface AuthModalProps {
-  purpose?: 'reservation' | 'account';
+  purpose?: 'reservation' | 'account' | 'idea';
   initialMode: AuthMode;
   /** Fechou sem entrar (Esc ou o X) */
   onClose: () => void;
   /** Entrou (ou criou a conta e entrou) */
   onSuccess: () => void;
 }
+
+const ENTER_TITLE: Record<NonNullable<AuthModalProps['purpose']>, string> = {
+  reservation: 'Entre para reservar',
+  account: 'Acesse sua conta',
+  idea: 'Entre para enviar sua ideia',
+};
+
+const DESCRIPTION: Record<NonNullable<AuthModalProps['purpose']>, string> = {
+  reservation: 'A reserva é feita pela sua conta: o assistente usa os dados dela para preencher a solicitação.',
+  account: 'Entre ou crie uma conta para acessar seus dados e os serviços do Parque Tecnológico.',
+  idea: 'A ideia é enviada pela sua conta: o nome, o e-mail, o telefone e a instituição dela identificam quem propôs.',
+};
 
 /** Acesso antes da reserva: entrar ou criar a conta, num modal sobre a página */
 export function AuthModal({ initialMode, onClose, onSuccess, purpose = 'reservation' }: AuthModalProps) {
@@ -268,7 +280,7 @@ export function AuthModal({ initialMode, onClose, onSuccess, purpose = 'reservat
               <img src={simboloParque} alt="" className="w-6 h-6 object-contain" />
             </span>
             <h2 id="acesso-titulo" className="text-xl font-black leading-tight">
-              {vm.mode === 'entrar' ? (purpose === 'account' ? 'Acesse sua conta' : 'Entre para reservar') : 'Crie a sua conta'}
+              {vm.mode === 'entrar' ? ENTER_TITLE[purpose] : 'Crie a sua conta'}
             </h2>
           </div>
           <button
@@ -282,7 +294,7 @@ export function AuthModal({ initialMode, onClose, onSuccess, purpose = 'reservat
         </div>
 
         <p id="acesso-descricao" className="mt-3 text-sm leading-relaxed text-semispe-blue-dark/75">
-          {purpose === 'account' ? 'Entre ou crie uma conta para acessar seus dados e os serviços do Parque Tecnológico.' : 'A reserva é feita pela sua conta: o assistente usa os dados dela para preencher a solicitação.'}
+          {DESCRIPTION[purpose]}
         </p>
 
         <div className="mt-5">
