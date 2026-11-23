@@ -892,3 +892,19 @@ Retorna `id`, `name`, `latitude`, `longitude`, `online`, `lastDataReceivedAt`, `
 ```bash
 curl -X GET http://localhost:3000/api/stations
 ```
+
+### Estações sem backend público (GitHub Pages)
+
+O navegador não pode chamar a Aurassure direto (a API não libera CORS e a chave
+ficaria pública). No site publicado sem `VITE_API_URL`, a página Ar lê o arquivo
+`stations.json` da própria `gh-pages`, mantido pelo workflow `update-stations`
+(a cada 30 minutos), que reaproveita o `StationsService` com as credenciais dos
+Repository secrets `AURASSURE_ACCESS_ID` e `AURASSURE_ACCESS_KEY`. O arquivo tem
+`generatedAt` e `stations` (mesmo formato da rota acima). Com `VITE_API_URL`
+cadastrada, a página volta a usar a API.
+
+Para gerar o arquivo localmente (usa o `backend/.env`):
+
+```bash
+npm run stations:export -- stations.json
+```

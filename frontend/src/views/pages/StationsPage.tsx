@@ -36,6 +36,12 @@ export default function StationsPage() {
               <p className="mt-4 max-w-2xl text-base leading-relaxed text-semispe-blue-dark/75 sm:text-lg">
                 Medições das estações de monitoramento instaladas em São Luís.
               </p>
+              {vm.generatedAt && (
+                <p className="mt-2 text-sm text-semispe-blue-dark/60">
+                  Dados atualizados em{' '}
+                  {new Date(vm.generatedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                </p>
+              )}
             </div>
 
             <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold">
