@@ -27,9 +27,13 @@ export function AdminPage() {
   }, [logout]);
   return (
     <div className="min-h-svh flex flex-col bg-semispe-surface text-semispe-blue-dark font-sans">
-      <a className="sr-only focus:not-sr-only focus:p-3 focus:bg-semispe-yellow" href="#admin-content">
+      <Link
+        className="sr-only focus:not-sr-only focus:p-3 focus:bg-semispe-yellow"
+        to="#admin-content"
+        onClick={() => document.getElementById('admin-content')?.scrollIntoView()}
+      >
         Pular para o conteúdo
-      </a>
+      </Link>
       <header className="relative bg-[#021f42] text-white">
         <div className="flex min-h-20 items-center justify-between gap-4 px-5 sm:px-8">
           <Link to="/" aria-label="Página inicial do Parque Tecnológico">

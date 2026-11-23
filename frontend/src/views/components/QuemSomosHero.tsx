@@ -1,4 +1,5 @@
 import { ArrowDown, Building2, CalendarDays, MapPin, type LucideIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import graphicTriangulos from '../../assets/graphics/graphic-brand-triangles.svg';
 import { type KeyFact, type QuemSomosIntro } from '../../models/quemSomos.model';
 import { type NavItem } from '../../models/navigation.model';
@@ -56,15 +57,15 @@ export function QuemSomosHero({ intro, section }: QuemSomosHeroProps) {
             <ul className="flex flex-wrap gap-2">
               {intro.anchors.map((anchor) => (
                 <li key={anchor.id}>
-                  <a
-                    href={`#${anchor.id}`}
+                  <Link
+                    to={`#${anchor.id}`}
                     style={{ '--accent': anchor.accent.onLight, '--dot': anchor.accent.color } as React.CSSProperties}
                     className="group inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-xs font-bold ring-1 ring-semispe-blue-dark/15 transition-colors duration-200 hover:ring-(--accent) hover:text-(--accent) focus:outline-none focus-visible:ring-2 focus-visible:ring-semispe-blue-dark"
                   >
                     <span className="w-2 h-2 rounded-full bg-(--dot)" aria-hidden="true" />
                     {anchor.label}
                     <ArrowDown className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-y-0.5" aria-hidden="true" />
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

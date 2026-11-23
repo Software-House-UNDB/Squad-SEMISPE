@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:pages": "tsc -b && vite build --base=/Squad-SEMISPE/",
     "lint": "oxlint",
     "preview": "vite preview",
+    "preview:pages": "vite preview --base=/Squad-SEMISPE/",
     "test": "vitest run"
   },
   "dependencies": {

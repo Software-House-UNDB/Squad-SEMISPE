@@ -25,5 +25,5 @@ export function officialSpacePhoto(name: string): string | undefined {
           : ['mini auditorio', 'miniauditorio'].includes(normalized)
             ? 'mini-auditorio'
             : undefined;
-  return file ? `/images/spaces/${file}.jpg` : undefined;
+  return file ? `${import.meta.env.BASE_URL}images/spaces/${file}.jpg` : undefined;
 }

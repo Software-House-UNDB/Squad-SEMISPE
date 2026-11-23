@@ -1,4 +1,5 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { SiteRouter } from './views/components/SiteRouter';
 import { HomePage } from './views/pages/HomePage';
 import { EstruturaPage } from './views/pages/EstruturaPage';
 import { QuemSomosPage } from './views/pages/QuemSomosPage';
@@ -16,7 +17,7 @@ import { BancoIdeiasPage } from './views/pages/BancoIdeiasPage';
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <SiteRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/quem-somos" element={<QuemSomosPage />} />
@@ -37,6 +38,6 @@ export default function App() {
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </SiteRouter>
   );
 }

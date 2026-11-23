@@ -111,7 +111,9 @@ export const DEFAULT_EVENT_HIGHLIGHTS: EventHighlight[] = [
   },
 ];
 
-const TREE_BRANCH_ITEMS = MAIN_NAV_ITEMS.filter((item) => !TREE_ROOT_SECTION_IDS.includes(item.id));
+const TREE_BRANCH_ITEMS = MAIN_NAV_ITEMS.filter(
+  (item) => item.id !== 'banco-de-ideias' && !TREE_ROOT_SECTION_IDS.includes(item.id)
+);
 /** Cada seção por id, para as pílulas de abertura (rótulo e cor de identidade) */
 const SECTIONS: Readonly<Record<string, NavItem>> = Object.fromEntries(
   MAIN_NAV_ITEMS.map((item) => [item.id, item])
