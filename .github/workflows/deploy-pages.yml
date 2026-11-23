@@ -1,0 +1,88 @@
+# Publica o site (frontend) no GitHub Pages a cada push na developer.
+#
+# Fluxo: push na developer -> testa e compila o frontend -> grava o build na
+# branch gh-pages -> o GitHub Pages serve a gh-pages ("Deploy from a branch").
+# A gh-pages e so a saida do build: nao edite nem faca merge nela (cada deploy
+# apaga e recria o conteudo inteiro).
+#
+# So roda quando algo em frontend/ muda; use "Run workflow" na aba Actions para
+# publicar manualmente (por exemplo, depois de cadastrar VITE_API_URL).
+#
+# Configuracao no GitHub:
+#   - Settings > Pages > Source: "Deploy from a branch" > gh-pages / (root)
+#   - Settings > Environments > github-pages: permitir a branch "gh-pages"
+#   - Settings > Secrets and variables > Actions > Variables:
+#     VITE_API_URL = URL publica do backend, terminada em /api
+name: Deploy Pages (gh-pages)
+
+on:
+  push:
+    branches: [developer]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # vitest 5 / jsdom 31 exigem Node >= 22.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+        working-directory: frontend
+
+      - run: npm test
+        working-directory: frontend
+
+      - name: Avisar se a URL da API nao estiver configurada
+        if: ${{ vars.VITE_API_URL == '' }}
+        run: echo "::warning::A variavel VITE_API_URL nao esta cadastrada. O site publicado vai chamar http://localhost:3000/api e as paginas que usam a API vao falhar."
+
+      # Gera o site com base /Squad-SEMISPE/ (HashRouter em producao no Pages).
+      - run: npm run build:pages
+        working-directory: frontend
+        env:
+          # Variavel (nao secret): vai para o bundle publico. Credenciais da
+          # Aurassure NUNCA entram aqui, ficam so no backend.
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+
+      - name: Publicar o build na branch gh-pages
+        run: |
+          set -euo pipefail
+          if ! git ls-remote --exit-code --heads origin gh-pages > /dev/null; then
+            echo "::error::A branch gh-pages nao existe no remoto. Crie-a antes de publicar."
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin gh-pages
+          SITE="$RUNNER_TEMP/site"
+          git worktree add -B gh-pages "$SITE" FETCH_HEAD
+          cd "$SITE"
+          # Limpa tudo (inclusive restos de publicacoes antigas) e copia o build novo
+          git rm -rq --ignore-unmatch .
+          cp -R "$GITHUB_WORKSPACE/frontend/dist/." .
+          # Sem Jekyll: ele ignora pastas iniciadas por "_"
+          touch .nojekyll
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nenhuma mudanca para publicar."
+            exit 0
+          fi
+          git commit -q -m "deploy: developer @ ${GITHUB_SHA::7}"
+          git push origin HEAD:gh-pages
