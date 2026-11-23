@@ -6,6 +6,7 @@ import { usePageNavigation } from './usePageNavigation'
 export function useStationsViewModel() {
   const navigation = usePageNavigation('ar')
   const [stations, setStations] = useState<Station[]>([])
+  const [generatedAt, setGeneratedAt] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -17,7 +18,9 @@ export function useStationsViewModel() {
 
     listStations()
       .then((data) => {
-        if (!ignore) setStations(data)
+        if (ignore) return
+        setStations(data.stations)
+        setGeneratedAt(data.generatedAt)
       })
       .catch((err: unknown) => {
         if (!ignore) setError(err instanceof Error ? err.message : 'Não foi possível carregar as estações.')
@@ -31,5 +34,5 @@ export function useStationsViewModel() {
     }
   }, [])
 
-  return { ...navigation, stations, isLoading, error }
+  return { ...navigation, stations, generatedAt, isLoading, error }
 }

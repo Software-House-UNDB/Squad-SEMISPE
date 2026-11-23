@@ -34,7 +34,8 @@
     "migration:generate": "npm run typeorm -- migration:generate -d src/database/data-source.ts",
     "migration:run": "npm run typeorm -- migration:run -d src/database/data-source.ts",
     "migration:revert": "npm run typeorm -- migration:revert -d src/database/data-source.ts",
-    "dev:spaces-catalog": "ts-node test/create-spaces-catalog.ts"
+    "dev:spaces-catalog": "ts-node test/create-spaces-catalog.ts",
+    "stations:export": "ts-node test/export-stations.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

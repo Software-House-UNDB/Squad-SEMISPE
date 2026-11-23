@@ -1,0 +1,78 @@
+# Atualiza o stations.json (qualidade do ar) no GitHub Pages sem backend.
+#
+# O navegador nao pode chamar a Aurassure direto (a API nao libera CORS e a
+# chave ficaria publica). Este workflow faz o papel do backend: a cada 30 min
+# ele consulta a Aurassure com as credenciais dos Secrets, gera o stations.json
+# e grava na raiz da branch gh-pages. A pagina Ar le esse arquivo do proprio
+# site. Com VITE_API_URL cadastrada (backend publico), a pagina usa a API e este
+# workflow deixa de ser necessario.
+#
+# Configuracao no GitHub:
+#   - Settings > Secrets and variables > Actions > Secrets > "New repository
+#     secret": AURASSURE_ACCESS_ID e AURASSURE_ACCESS_KEY (Secrets de
+#     repositorio: secrets de Environment nao chegam aqui)
+#
+# Observacoes: o agendamento so roda a partir da branch default (developer) e o
+# GitHub o desativa se o repositorio ficar 60 dias sem atividade (reative em
+# Actions). Pode haver atraso de alguns minutos no horario.
+name: Atualizar estações (gh-pages)
+
+on:
+  schedule:
+    - cron: '0 */12 * * *'
+  workflow_dispatch:
+  push:
+    branches: [developer]
+    paths:
+      - '.github/workflows/update-stations.yml'
+      - '.github/scripts/publish-gh-pages.sh'
+      - 'backend/test/export-stations.ts'
+      - 'backend/src/stations/**'
+
+permissions:
+  contents: write
+
+# Grupo proprio: o GitHub mantem so um job pendente por grupo e cancelaria o
+# anterior. Se este workflow e o deploy do site coincidirem, o script de
+# publicacao refaz o push a partir da ponta nova da gh-pages.
+concurrency:
+  group: update-stations
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      HAS_CREDENTIALS: ${{ secrets.AURASSURE_ACCESS_ID != '' && secrets.AURASSURE_ACCESS_KEY != '' }}
+    steps:
+      - name: Avisar se os Secrets nao estiverem cadastrados
+        if: ${{ env.HAS_CREDENTIALS != 'true' }}
+        run: echo "::warning::Cadastre os Repository secrets AURASSURE_ACCESS_ID e AURASSURE_ACCESS_KEY para atualizar as estacoes. Nada foi publicado."
+
+      - uses: actions/checkout@v4
+        if: ${{ env.HAS_CREDENTIALS == 'true' }}
+
+      - uses: actions/setup-node@v4
+        if: ${{ env.HAS_CREDENTIALS == 'true' }}
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - run: npm ci
+        if: ${{ env.HAS_CREDENTIALS == 'true' }}
+        working-directory: backend
+
+      # Reusa o StationsService do backend: mesma logica e mesmo formato da API.
+      - name: Gerar o stations.json
+        if: ${{ env.HAS_CREDENTIALS == 'true' }}
+        working-directory: backend
+        env:
+          AURASSURE_ACCESS_ID: ${{ secrets.AURASSURE_ACCESS_ID }}
+          AURASSURE_ACCESS_KEY: ${{ secrets.AURASSURE_ACCESS_KEY }}
+        run: npx ts-node test/export-stations.ts "$RUNNER_TEMP/stations.json"
+
+      - name: Publicar na branch gh-pages
+        if: ${{ env.HAS_CREDENTIALS == 'true' }}
+        run: |
+          bash .github/scripts/publish-gh-pages.sh file "$RUNNER_TEMP/stations.json" "stations: atualiza dados"
