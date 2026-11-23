@@ -1,6 +1,8 @@
 import type { Station } from '../models/station.model'
 
-const API_URL = import.meta.env.VITE_API_URL ?? '/api/'
+// `||` (e nao `??`): variavel vazia no build (ex.: GitHub Actions sem a variavel
+// cadastrada) tambem deve cair no padrao.
+const API_URL = import.meta.env.VITE_API_URL || '/api/'
 
 export async function listStations(): Promise<Station[]> {
   const response = await fetch(new URL('stations', new URL(API_URL, window.location.origin)))
