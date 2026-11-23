@@ -14,14 +14,14 @@ import { SiteFooter } from '../components/SiteFooter';
  */
 export function QuemSomosPage() {
   const vm = useQuemSomosViewModel();
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
 
   // Abre do topo, ou direto na seção do link (ex.: /quem-somos#atuacao)
   useEffect(() => {
-    const sectionId = window.location.hash.slice(1);
+    const sectionId = hash.slice(1);
     if (sectionId) document.getElementById(sectionId)?.scrollIntoView();
     else window.scrollTo(0, 0);
-  }, [pathname]);
+  }, [pathname, hash]);
 
   const { content } = vm;
 

@@ -1,5 +1,6 @@
 
 import { Menu, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import logoParque from '../../assets/brand/logo-parque-tecnologico.png';
 import type { NavItem } from '../../models/navigation.model';
 import { BrandStripe } from './ui/BrandStripe';
@@ -41,9 +42,10 @@ export function Navbar({
         <div className="flex items-center justify-between h-16">
 
           {/* Logo Oficial do Parque Tecnológico */}
-          <a
-            href="/"
+          <Link
+            to="/"
             onClick={(e) => {
+              if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
               // Volta ao topo da home, na introdução, sem nenhuma seção ativa no menu
               e.preventDefault();
               onNavItemClick('/', '');
@@ -67,29 +69,30 @@ export function Navbar({
                 className="absolute inset-0 w-full h-full object-contain brightness-0 invert [clip-path:inset(0_0_0_44%)]"
               />
             </span>
-          </a>
+          </Link>
 
           {/* Links Desktop */}
           <nav className="hidden lg:flex items-center gap-4 xl:gap-8" aria-label="Navegação principal">
             {navItems.map((item) => {
               const isActive = activeSection === item.id;
               return (
-                <a
+                <Link
                   key={item.id}
-                  href={item.href}
+                  to={item.href}
                   onClick={(e) => {
+                    if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
                     e.preventDefault();
                     onNavItemClick(item.href, item.id);
                   }}
                   style={accentStyle(item)}
-                  className={`text-xs font-black tracking-wider uppercase transition-colors duration-200 py-1 border-b-2 ${
+                  className={`whitespace-nowrap text-xs font-black tracking-wider uppercase transition-colors duration-200 py-1 border-b-2 ${
                     isActive
                       ? 'text-(--accent) border-(--accent)'
                       : 'text-white/75 hover:text-(--accent) border-transparent hover:border-(--accent)/50'
                   }`}
                 >
                   {item.label}
-                </a>
+                </Link>
               );
             })}
           </nav>
@@ -117,10 +120,11 @@ export function Navbar({
       {isMobileMenuOpen && (
         <div className="lg:hidden border-t border-white/10 px-4 pt-2 pb-5 space-y-1 animate-in slide-in-from-top-2 duration-150">
           {navItems.map((item) => (
-            <a
+            <Link
               key={item.id}
-              href={item.href}
+              to={item.href}
               onClick={(e) => {
+                if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
                 e.preventDefault();
                 onNavItemClick(item.href, item.id);
               }}
@@ -131,7 +135,7 @@ export function Navbar({
             >
               <span className="w-1.5 h-1.5 rounded-full bg-(--accent)" aria-hidden="true" />
               {item.label}
-            </a>
+            </Link>
           ))}
         </div>
       )}

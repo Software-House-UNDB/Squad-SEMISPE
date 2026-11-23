@@ -51,7 +51,7 @@ export interface BancoIdeiasViewModel extends PageNavigationViewModel {
  * como a reserva: os dados do proponente vêm dela.
  */
 export function useBancoIdeiasViewModel(): BancoIdeiasViewModel {
-  const navigation = usePageNavigation('');
+  const navigation = usePageNavigation('banco-de-ideias');
   const auth = useAuth();
   const client = useQueryClient();
   const [authModal, setAuthModal] = useState<AuthMode | null>(null);

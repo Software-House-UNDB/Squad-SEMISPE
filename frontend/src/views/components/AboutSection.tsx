@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowDown, Play, Pause } from 'lucide-react';
 import videoLogo from '../../assets/brand/logo-com-movimento.mp4';
 import { type AboutSectionData } from '../../models/about.model';
@@ -68,13 +69,13 @@ function MetricCard({
 
         {/* Card com link: o link cobre o card todo, e o texto avisa para onde ele leva */}
         {link && (
-          <a
-            href={link.href}
+          <Link
+            to={link.href}
             className="mt-2 inline-flex items-center gap-1 text-[11px] font-black tracking-wider uppercase text-semispe-yellow after:absolute after:inset-0 after:content-[''] focus:outline-none focus-visible:underline"
           >
             {link.label}
             <ArrowDown className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-y-0.5" aria-hidden="true" />
-          </a>
+          </Link>
         )}
       </div>
     </div>
