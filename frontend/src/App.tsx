@@ -14,6 +14,7 @@ import { AdminPlannedModule } from './views/components/admin/AdminPlannedModule'
 import { ProfilePage } from './views/pages/ProfilePage';
 import { ParceirosPage } from './views/pages/ParceirosPage';
 import { BancoIdeiasPage } from './views/pages/BancoIdeiasPage';
+import { ContatoPage } from './views/pages/ContatoPage';
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/quem-somos" element={<QuemSomosPage />} />
         <Route path="/parceiros" element={<ParceirosPage />} />
         <Route path="/banco-de-ideias" element={<BancoIdeiasPage />} />
+        <Route path="/contato" element={<ContatoPage />} />
         <Route path="/meus-dados" element={<ProfilePage />} />
         <Route path="/admin" element={<AdminPage />}>
           <Route index element={<AdminOverview />} />

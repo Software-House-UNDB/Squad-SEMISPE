@@ -1,7 +1,22 @@
 # API de Fale conosco
 
-Módulo `ContactsModule`, somente backend. Recebe nome, e-mail, assunto e mensagem,
+Módulo `ContactsModule`. Recebe nome, e-mail, assunto e mensagem,
 conforme a seção 3.11 dos requisitos do portal. Não exige cadastro para envio.
+
+## Integração com o frontend
+
+A página `/contato`, acessível pelo item **Contato** do menu, utiliza este POST
+público. No build do Pages, o endereço é `/Squad-SEMISPE/#/contato`.
+O formulário valida os quatro campos e seus limites, normaliza os textos e o
+e-mail, bloqueia envios simultâneos e mantém os dados em caso de erro. Não há
+reenvio automático: a pessoa pode tentar novamente após conferir o erro.
+
+A autorização de uso dos dados é exigida na interface e não é transmitida como
+campo extra; a API continua aceitando somente nome, e-mail, assunto e mensagem.
+Essa confirmação de interface não constitui um registro de consentimento no banco.
+A confirmação exibida informa o recebimento da mensagem, sem prometer entrega
+por e-mail. Permanecem pendentes a definição do destinatário institucional e a
+configuração SMTP descritas abaixo. O Pages, sozinho, não hospeda esta API.
 
 ## Rotas
 
