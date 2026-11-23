@@ -1,0 +1,743 @@
+{
+  "generatedAt": "2026-11-23T19:16:12.552Z",
+  "stations": [
+    {
+      "id": 37592,
+      "name": "UEB Gov Leonel Brizola",
+      "latitude": -2.495482,
+      "longitude": -44.209751,
+      "online": true,
+      "lastDataReceivedAt": "2026-11-23T19:14:16.000Z",
+      "aqi": 19,
+      "parameters": [
+        {
+          "key": "pc10",
+          "name": "PC10",
+          "unit": "/m3",
+          "value": 40.86
+        },
+        {
+          "key": "pc0.5",
+          "name": "PC0.5",
+          "unit": "/m3",
+          "value": 33.91
+        },
+        {
+          "key": "pc1.0",
+          "name": "PC1.0",
+          "unit": "/m3",
+          "value": 39.9
+        },
+        {
+          "key": "pc2.5",
+          "name": "PC2.5",
+          "unit": "/m3",
+          "value": 40.69
+        },
+        {
+          "key": "pc4.0",
+          "name": "PC4.0",
+          "unit": "/m3",
+          "value": 40.83
+        },
+        {
+          "key": "pc5.0",
+          "name": "PC5.0",
+          "unit": "/m3",
+          "value": 40.83
+        },
+        {
+          "key": "no2_we",
+          "name": "NO2 WE voltage",
+          "unit": "",
+          "value": 0
+        },
+        {
+          "key": "no2_ae",
+          "name": "NO2 AE voltage",
+          "unit": "",
+          "value": 0
+        },
+        {
+          "key": "o3_we",
+          "name": "O3 WE voltage",
+          "unit": "",
+          "value": 0
+        },
+        {
+          "key": "o3_ae",
+          "name": "O3 AE voltage",
+          "unit": "",
+          "value": 0
+        },
+        {
+          "key": "data_availability",
+          "name": "Data Availability",
+          "unit": "%",
+          "value": null
+        },
+        {
+          "key": "temp",
+          "name": "Temperature",
+          "unit": "DegC",
+          "value": 28.92
+        },
+        {
+          "key": "humid",
+          "name": "Humidity",
+          "unit": "%",
+          "value": 69.67
+        },
+        {
+          "key": "pm2.5",
+          "name": "PM2.5",
+          "unit": "μg/m3",
+          "value": 6.08
+        },
+        {
+          "key": "pm10",
+          "name": "PM10",
+          "unit": "μg/m3",
+          "value": 12.78
+        },
+        {
+          "key": "co2",
+          "name": "CO2",
+          "unit": "ppm",
+          "value": 419.09
+        },
+        {
+          "key": "tvoc",
+          "name": "TVOC",
+          "unit": "ppm",
+          "value": 0
+        },
+        {
+          "key": "pm1",
+          "name": "PM1.0",
+          "unit": "μg/m3",
+          "value": 5.09
+        }
+      ]
+    },
+    {
+      "id": 37486,
+      "name": "Hospital Zona Rural",
+      "latitude": -2.637596,
+      "longitude": -44.26797,
+      "online": true,
+      "lastDataReceivedAt": "2026-11-23T18:34:13.000Z",
+      "aqi": 19,
+      "parameters": [
+        {
+          "key": "pc10",
+          "name": "PC10",
+          "unit": "/m3",
+          "value": 41.13
+        },
+        {
+          "key": "pc0.5",
+          "name": "PC0.5",
+          "unit": "/m3",
+          "value": 33.97
+        },
+        {
+          "key": "pc1.0",
+          "name": "PC1.0",
+          "unit": "/m3",
+          "value": 40.07
+        },
+        {
+          "key": "pc2.5",
+          "name": "PC2.5",
+          "unit": "/m3",
+          "value": 40.93
+        },
+        {
+          "key": "pc4.0",
+          "name": "PC4.0",
+          "unit": "/m3",
+          "value": 41.09
+        },
+        {
+          "key": "pc5.0",
+          "name": "PC5.0",
+          "unit": "/m3",
+          "value": 41.09
+        },
+        {
+          "key": "no2_we",
+          "name": "NO2 WE voltage",
+          "unit": "",
+          "value": 0
+        },
+        {
+          "key": "no2_ae",
+          "name": "NO2 AE voltage",
+          "unit": "",
+          "value": 0
+        },
+        {
+          "key": "o3_we",
+          "name": "O3 WE voltage",
+          "unit": "",
+          "value": 0
+        },
+        {
+          "key": "o3_ae",
+          "name": "O3 AE voltage",
+          "unit": "",
+          "value": 0
+        },
+        {
+          "key": "temp",
+          "name": "Temperature",
+          "unit": "DegC",
+          "value": 30.71
+        },
+        {
+          "key": "humid",
+          "name": "Humidity",
+          "unit": "%",
+          "value": 76.06
+        },
+        {
+          "key": "pm2.5",
+          "name": "PM2.5",
+          "unit": "μg/m3",
+          "value": 6.26
+        },
+        {
+          "key": "pm10",
+          "name": "PM10",
+          "unit": "μg/m3",
+          "value": 13.14
+        },
+        {
+          "key": "co2",
+          "name": "CO2",
+          "unit": "ppm",
+          "value": 419.6
+        },
+        {
+          "key": "tvoc",
+          "name": "TVOC",
+          "unit": "ppm",
+          "value": 0
+        },
+        {
+          "key": "pm1",
+          "name": "PM1.0",
+          "unit": "μg/m3",
+          "value": 5.18
+        },
+        {
+          "key": "data_availability",
+          "name": "Data Availability",
+          "unit": "%",
+          "value": null
+        }
+      ]
+    },
+    {
+      "id": 37351,
+      "name": "UEB Maria de Jesus Carvalho",
+      "latitude": -2.541173,
+      "longitude": -44.256553,
+      "online": true,
+      "lastDataReceivedAt": "2026-11-23T19:14:57.000Z",
+      "aqi": 13,
+      "parameters": [
+        {
+          "key": "pc10",
+          "name": "PC10",
+          "unit": "/m3",
+          "value": 35.43
+        },
+        {
+          "key": "pc0.5",
+          "name": "PC0.5",
+          "unit": "/m3",
+          "value": 27.58
+        },
+        {
+          "key": "pc1.0",
+          "name": "PC1.0",
+          "unit": "/m3",
+          "value": 33.75
+        },
+        {
+          "key": "pc2.5",
+          "name": "PC2.5",
+          "unit": "/m3",
+          "value": 35.13
+        },
+        {
+          "key": "pc4.0",
+          "name": "PC4.0",
+          "unit": "/m3",
+          "value": 0
+        },
+        {
+          "key": "pc5.0",
+          "name": "PC5.0",
+          "unit": "/m3",
+          "value": 0
+        },
+        {
+          "key": "no2_we",
+          "name": "NO2 WE voltage",
+          "unit": "",
+          "value": 0
+        },
+        {
+          "key": "no2_ae",
+          "name": "NO2 AE voltage",
+          "unit": "",
+          "value": 0
+        },
+        {
+          "key": "o3_we",
+          "name": "O3 WE voltage",
+          "unit": "",
+          "value": 0
+        },
+        {
+          "key": "o3_ae",
+          "name": "O3 AE voltage",
+          "unit": "",
+          "value": 0
+        },
+        {
+          "key": "data_availability",
+          "name": "Data Availability",
+          "unit": "%",
+          "value": null
+        },
+        {
+          "key": "temp",
+          "name": "Temperature",
+          "unit": "DegC",
+          "value": 39.49
+        },
+        {
+          "key": "humid",
+          "name": "Humidity",
+          "unit": "%",
+          "value": 43.79
+        },
+        {
+          "key": "pm2.5",
+          "name": "PM2.5",
+          "unit": "μg/m3",
+          "value": 5.95
+        },
+        {
+          "key": "pm10",
+          "name": "PM10",
+          "unit": "μg/m3",
+          "value": 12.5
+        },
+        {
+          "key": "co2",
+          "name": "CO2",
+          "unit": "ppm",
+          "value": 646.31
+        },
+        {
+          "key": "tvoc",
+          "name": "TVOC",
+          "unit": "ppm",
+          "value": 0.65
+        },
+        {
+          "key": "pm1",
+          "name": "PM1.0",
+          "unit": "μg/m3",
+          "value": 4.44
+        }
+      ]
+    },
+    {
+      "id": 37349,
+      "name": "Clin Familia do Anjo da Guarda",
+      "latitude": -2.56507,
+      "longitude": -44.333189,
+      "online": true,
+      "lastDataReceivedAt": "2026-11-23T19:14:35.000Z",
+      "aqi": 21,
+      "parameters": [
+        {
+          "key": "pc10",
+          "name": "PC10",
+          "unit": "/m3",
+          "value": 39.92
+        },
+        {
+          "key": "pc0.5",
+          "name": "PC0.5",
+          "unit": "/m3",
+          "value": 33.49
+        },
+        {
+          "key": "pc1.0",
+          "name": "PC1.0",
+          "unit": "/m3",
+          "value": 39.14
+        },
+        {
+          "key": "pc2.5",
+          "name": "PC2.5",
+          "unit": "/m3",
+          "value": 39.79
+        },
+        {
+          "key": "pc4.0",
+          "name": "PC4.0",
+          "unit": "/m3",
+          "value": 39.76
+        },
+        {
+          "key": "pc5.0",
+          "name": "PC5.0",
+          "unit": "/m3",
+          "value": 39.76
+        },
+        {
+          "key": "no2_we",
+          "name": "NO2 WE voltage",
+          "unit": "",
+          "value": 0
+        },
+        {
+          "key": "no2_ae",
+          "name": "NO2 AE voltage",
+          "unit": "",
+          "value": 0
+        },
+        {
+          "key": "o3_we",
+          "name": "O3 WE voltage",
+          "unit": "",
+          "value": 0
+        },
+        {
+          "key": "o3_ae",
+          "name": "O3 AE voltage",
+          "unit": "",
+          "value": 0
+        },
+        {
+          "key": "temp",
+          "name": "Temperature",
+          "unit": "DegC",
+          "value": 28.76
+        },
+        {
+          "key": "humid",
+          "name": "Humidity",
+          "unit": "%",
+          "value": 86.16
+        },
+        {
+          "key": "pm2.5",
+          "name": "PM2.5",
+          "unit": "μg/m3",
+          "value": 5.85
+        },
+        {
+          "key": "pm10",
+          "name": "PM10",
+          "unit": "μg/m3",
+          "value": 12.28
+        },
+        {
+          "key": "co2",
+          "name": "CO2",
+          "unit": "ppm",
+          "value": 431.42
+        },
+        {
+          "key": "tvoc",
+          "name": "TVOC",
+          "unit": "ppm",
+          "value": 3.44
+        },
+        {
+          "key": "pm1",
+          "name": "PM1.0",
+          "unit": "μg/m3",
+          "value": 4.98
+        },
+        {
+          "key": "data_availability",
+          "name": "Data Availability",
+          "unit": "%",
+          "value": null
+        }
+      ]
+    },
+    {
+      "id": 37267,
+      "name": "UEMA - Parque Universitario",
+      "latitude": -2.574215,
+      "longitude": -44.209112,
+      "online": true,
+      "lastDataReceivedAt": "2026-11-23T19:14:31.000Z",
+      "aqi": 31,
+      "parameters": [
+        {
+          "key": "temp",
+          "name": "Temperature",
+          "unit": "DegC",
+          "value": 30.98
+        },
+        {
+          "key": "humid",
+          "name": "Humidity",
+          "unit": "%",
+          "value": 62.82
+        },
+        {
+          "key": "pm2.5",
+          "name": "PM2.5",
+          "unit": "μg/m3",
+          "value": 6.9
+        },
+        {
+          "key": "pm10",
+          "name": "PM10",
+          "unit": "μg/m3",
+          "value": 14.49
+        },
+        {
+          "key": "no2",
+          "name": "NO2",
+          "unit": "ppb",
+          "value": 1.23
+        },
+        {
+          "key": "o3",
+          "name": "O3",
+          "unit": "ppb",
+          "value": 39.93
+        },
+        {
+          "key": "co2",
+          "name": "CO2",
+          "unit": "ppm",
+          "value": 485.08
+        },
+        {
+          "key": "tvoc",
+          "name": "TVOC",
+          "unit": "ppm",
+          "value": 0.12
+        },
+        {
+          "key": "pm1",
+          "name": "PM1.0",
+          "unit": "μg/m3",
+          "value": 5.74
+        },
+        {
+          "key": "pc10",
+          "name": "PC10",
+          "unit": "/m3",
+          "value": 46.22
+        },
+        {
+          "key": "pc0.5",
+          "name": "PC0.5",
+          "unit": "/m3",
+          "value": 37.86
+        },
+        {
+          "key": "pc1.0",
+          "name": "PC1.0",
+          "unit": "/m3",
+          "value": 44.85
+        },
+        {
+          "key": "pc2.5",
+          "name": "PC2.5",
+          "unit": "/m3",
+          "value": 45.97
+        },
+        {
+          "key": "pc4.0",
+          "name": "PC4.0",
+          "unit": "/m3",
+          "value": 46.18
+        },
+        {
+          "key": "pc5.0",
+          "name": "PC5.0",
+          "unit": "/m3",
+          "value": 46.18
+        },
+        {
+          "key": "no2_we",
+          "name": "NO2 WE voltage",
+          "unit": "",
+          "value": 307.44
+        },
+        {
+          "key": "no2_ae",
+          "name": "NO2 AE voltage",
+          "unit": "",
+          "value": 294.12
+        },
+        {
+          "key": "o3_we",
+          "name": "O3 WE voltage",
+          "unit": "",
+          "value": 414.02
+        },
+        {
+          "key": "o3_ae",
+          "name": "O3 AE voltage",
+          "unit": "",
+          "value": 411.97
+        },
+        {
+          "key": "data_availability",
+          "name": "Data Availability",
+          "unit": "%",
+          "value": null
+        }
+      ]
+    },
+    {
+      "id": 37266,
+      "name": "Centro - SEMIT",
+      "latitude": -2.531559,
+      "longitude": -44.306566,
+      "online": true,
+      "lastDataReceivedAt": "2026-11-23T19:14:12.000Z",
+      "aqi": 28,
+      "parameters": [
+        {
+          "key": "temp",
+          "name": "Temperature",
+          "unit": "DegC",
+          "value": 30.5
+        },
+        {
+          "key": "humid",
+          "name": "Humidity",
+          "unit": "%",
+          "value": 67.15
+        },
+        {
+          "key": "pm2.5",
+          "name": "PM2.5",
+          "unit": "μg/m3",
+          "value": 5.01
+        },
+        {
+          "key": "pm10",
+          "name": "PM10",
+          "unit": "μg/m3",
+          "value": 10.51
+        },
+        {
+          "key": "no2",
+          "name": "NO2",
+          "unit": "ppb",
+          "value": 0.84
+        },
+        {
+          "key": "o3",
+          "name": "O3",
+          "unit": "ppb",
+          "value": 35.74
+        },
+        {
+          "key": "co2",
+          "name": "CO2",
+          "unit": "ppm",
+          "value": 498.55
+        },
+        {
+          "key": "tvoc",
+          "name": "TVOC",
+          "unit": "ppm",
+          "value": 0
+        },
+        {
+          "key": "pm1",
+          "name": "PM1.0",
+          "unit": "μg/m3",
+          "value": 3.92
+        },
+        {
+          "key": "pc10",
+          "name": "PC10",
+          "unit": "/m3",
+          "value": 31.36
+        },
+        {
+          "key": "pc0.5",
+          "name": "PC0.5",
+          "unit": "/m3",
+          "value": 25.15
+        },
+        {
+          "key": "pc1.0",
+          "name": "PC1.0",
+          "unit": "/m3",
+          "value": 30.22
+        },
+        {
+          "key": "pc2.5",
+          "name": "PC2.5",
+          "unit": "/m3",
+          "value": 31.16
+        },
+        {
+          "key": "pc4.0",
+          "name": "PC4.0",
+          "unit": "/m3",
+          "value": 31.32
+        },
+        {
+          "key": "pc5.0",
+          "name": "PC5.0",
+          "unit": "/m3",
+          "value": 31.32
+        },
+        {
+          "key": "no2_we",
+          "name": "NO2 WE voltage",
+          "unit": "",
+          "value": 295.14
+        },
+        {
+          "key": "no2_ae",
+          "name": "NO2 AE voltage",
+          "unit": "",
+          "value": 293.09
+        },
+        {
+          "key": "o3_we",
+          "name": "O3 WE voltage",
+          "unit": "",
+          "value": 433.49
+        },
+        {
+          "key": "o3_ae",
+          "name": "O3 AE voltage",
+          "unit": "",
+          "value": 402.75
+        },
+        {
+          "key": "data_availability",
+          "name": "Data Availability",
+          "unit": "%",
+          "value": null
+        }
+      ]
+    }
+  ]
+}
