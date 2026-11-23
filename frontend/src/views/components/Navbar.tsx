@@ -72,7 +72,7 @@ export function Navbar({
           </Link>
 
           {/* Links Desktop */}
-          <nav className="hidden lg:flex items-center gap-4 xl:gap-8" aria-label="Navegação principal">
+          <nav className="hidden lg:flex items-center gap-3 xl:gap-8" aria-label="Navegação principal">
             {navItems.map((item) => {
               const isActive = activeSection === item.id;
               return (
@@ -85,7 +85,7 @@ export function Navbar({
                     onNavItemClick(item.href, item.id);
                   }}
                   style={accentStyle(item)}
-                  className={`whitespace-nowrap text-xs font-black tracking-wider uppercase transition-colors duration-200 py-1 border-b-2 ${
+                  className={`whitespace-nowrap text-xs font-black tracking-normal xl:tracking-wider uppercase transition-colors duration-200 py-1 border-b-2 ${
                     isActive
                       ? 'text-(--accent) border-(--accent)'
                       : 'text-white/75 hover:text-(--accent) border-transparent hover:border-(--accent)/50'

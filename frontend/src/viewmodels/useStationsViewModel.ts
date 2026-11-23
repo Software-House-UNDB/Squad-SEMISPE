@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { Station } from '../models/station.model'
 import { listStations } from '../services/stationsService'
+import { usePageNavigation } from './usePageNavigation'
 
 export function useStationsViewModel() {
+  const navigation = usePageNavigation('ar')
   const [stations, setStations] = useState<Station[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -29,5 +31,5 @@ export function useStationsViewModel() {
     }
   }, [])
 
-  return { stations, isLoading, error }
+  return { ...navigation, stations, isLoading, error }
 }

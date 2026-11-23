@@ -111,8 +111,10 @@ export const DEFAULT_EVENT_HIGHLIGHTS: EventHighlight[] = [
   },
 ];
 
+/** Itens do menu que não viram galho da árvore da introdução */
+const TREE_EXCLUDED_SECTION_IDS: readonly string[] = ['banco-de-ideias', 'ar'];
 const TREE_BRANCH_ITEMS = MAIN_NAV_ITEMS.filter(
-  (item) => item.id !== 'banco-de-ideias' && !TREE_ROOT_SECTION_IDS.includes(item.id)
+  (item) => !TREE_EXCLUDED_SECTION_IDS.includes(item.id) && !TREE_ROOT_SECTION_IDS.includes(item.id)
 );
 /** Cada seção por id, para as pílulas de abertura (rótulo e cor de identidade) */
 const SECTIONS: Readonly<Record<string, NavItem>> = Object.fromEntries(
