@@ -176,3 +176,16 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ─── Mapa de estações (Leaflet) ───────────────────────────────────────────── */
+/* Tailwind preflight (img max-width:100%) quebra os tiles do Leaflet */
+.leaflet-container .leaflet-tile {
+  max-width: none !important;
+}
+
+.station-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+}

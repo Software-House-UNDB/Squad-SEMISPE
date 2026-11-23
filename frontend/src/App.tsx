@@ -15,6 +15,7 @@ import { ProfilePage } from './views/pages/ProfilePage';
 import { ParceirosPage } from './views/pages/ParceirosPage';
 import { BancoIdeiasPage } from './views/pages/BancoIdeiasPage';
 import { ContatoPage } from './views/pages/ContatoPage';
+import StationsPage from './views/pages/StationsPage';
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/parceiros" element={<ParceirosPage />} />
         <Route path="/banco-de-ideias" element={<BancoIdeiasPage />} />
         <Route path="/contato" element={<ContatoPage />} />
+        <Route path="/estacoes" element={<StationsPage />} />
         <Route path="/meus-dados" element={<ProfilePage />} />
         <Route path="/admin" element={<AdminPage />}>
           <Route index element={<AdminOverview />} />

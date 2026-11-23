@@ -23,4 +23,13 @@ export default () => ({
     from: process.env.MAIL_FROM,
     contactTo: process.env.CONTACT_TO,
   },
+  aurassure: {
+    baseUrl:
+      process.env.AURASSURE_BASE_URL ??
+      'https://app.aurassure.com/-/api/iot-platform/v1.1.0',
+    clientId: process.env.AURASSURE_CLIENT_ID ?? '21645',
+    applicationId: process.env.AURASSURE_APPLICATION_ID ?? '16',
+    accessId: process.env.AURASSURE_ACCESS_ID ?? '',
+    accessKey: process.env.AURASSURE_ACCESS_KEY ?? '',
+  },
 });

@@ -17,6 +17,7 @@ export const MAIN_NAV_ITEMS: readonly NavItem[] = [
   { id: 'parceiros', label: 'PARCEIROS', href: '/parceiros', accent: BRAND_ACCENTS.verdeClaro },
   { id: 'banco-de-ideias', label: 'BANCO DE IDEIAS', href: '/banco-de-ideias', accent: BRAND_ACCENTS.amarelo },
   { id: 'eventos', label: 'EVENTOS', href: '/#eventos', accent: BRAND_ACCENTS.verdeOliva },
+  { id: 'ar', label: 'AR', href: '/estacoes', accent: BRAND_ACCENTS.azul },
   { id: 'contato', label: 'CONTATO', href: '/contato', accent: BRAND_ACCENTS.verdePetroleo },
 ] as const;
 

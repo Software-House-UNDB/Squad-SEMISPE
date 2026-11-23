@@ -13,6 +13,7 @@ import { ReservationsModule } from './reservations/reservations.module';
 import { ContactsModule } from './contacts/contacts.module';
 import { EcosystemModule } from './ecosystem/ecosystem.module';
 import { NewsModule } from './news/news.module';
+import { StationsModule } from './stations/stations.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { NewsModule } from './news/news.module';
     ContactsModule,
     EcosystemModule,
     NewsModule,
+    StationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

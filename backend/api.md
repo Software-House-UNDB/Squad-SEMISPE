@@ -880,3 +880,15 @@ usar o IP encaminhado. Referência: https://docs.nestjs.com/security/rate-limiti
 - Aplicar migrations antes de iniciar a API em produção, com sincronização automática desativada.
 - Bancos locais criados por `synchronize` precisam de alinhamento de histórico/schema antes de executar as migrations iniciais; não execute sobre tabelas existentes sem esse alinhamento.
 - Reverter `CreateUsers` apaga a tabela e seus registros; não reverter em banco com dados que devam ser preservados.
+
+## Stations
+
+### Listar estações com qualidade do ar
+
+Proxy para a API da Aurassure (`things/list` + `things/data` agregado por hora). Exige
+`AURASSURE_ACCESS_ID` e `AURASSURE_ACCESS_KEY`; sem elas retorna `503`. Rota pública.
+Retorna `id`, `name`, `latitude`, `longitude`, `online`, `lastDataReceivedAt`, `aqi` e `parameters`.
+
+```bash
+curl -X GET http://localhost:3000/api/stations
+```
