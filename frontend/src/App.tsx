@@ -1,21 +1,47 @@
-import { Route, Routes } from 'react-router-dom'
-import StationsPage from './views/pages/StationsPage'
-
-function HomePage() {
-  return (
-    <main className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight">Squad SEMISPE - Parque Tecnológico</h1>
-      </div>
-    </main>
-  );
-}
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { SiteRouter } from './views/components/SiteRouter';
+import { HomePage } from './views/pages/HomePage';
+import { EstruturaPage } from './views/pages/EstruturaPage';
+import { QuemSomosPage } from './views/pages/QuemSomosPage';
+import { SpacesOverview } from './views/components/SpacesOverview';
+import { ComingSoonPanel } from './views/components/ComingSoonPanel';
+import { AgendaPanel } from './views/components/AgendaPanel';
+import { ReservaPanel } from './views/components/ReservaPanel';
+import { AdminPage } from './views/pages/AdminPage';
+import { AdminReservationsPage } from './views/pages/AdminReservationsPage';
+import { AdminOverview } from './views/components/admin/AdminOverview';
+import { AdminPlannedModule } from './views/components/admin/AdminPlannedModule';
+import { ProfilePage } from './views/pages/ProfilePage';
+import { ParceirosPage } from './views/pages/ParceirosPage';
+import { BancoIdeiasPage } from './views/pages/BancoIdeiasPage';
+import { ContatoPage } from './views/pages/ContatoPage';
+import StationsPage from './views/pages/StationsPage';
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/estacoes" element={<StationsPage />} />
-    </Routes>
+    <SiteRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/quem-somos" element={<QuemSomosPage />} />
+        <Route path="/parceiros" element={<ParceirosPage />} />
+        <Route path="/banco-de-ideias" element={<BancoIdeiasPage />} />
+        <Route path="/contato" element={<ContatoPage />} />
+        <Route path="/estacoes" element={<StationsPage />} />
+        <Route path="/meus-dados" element={<ProfilePage />} />
+        <Route path="/admin" element={<AdminPage />}>
+          <Route index element={<AdminOverview />} />
+          <Route path="reservas" element={<AdminReservationsPage />} />
+          <Route path=":moduleId" element={<AdminPlannedModule />} />
+        </Route>
+        <Route path="/estrutura" element={<EstruturaPage />}>
+          <Route index element={<SpacesOverview />} />
+          <Route path="agenda" element={<AgendaPanel />} />
+          <Route path="reserva" element={<ReservaPanel />} />
+          <Route path="como-funciona" element={<ComingSoonPanel itemId="como-funciona" />} />
+          <Route path="duvidas" element={<ComingSoonPanel itemId="duvidas" />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </SiteRouter>
   );
 }

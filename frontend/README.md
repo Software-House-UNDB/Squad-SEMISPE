@@ -1,5 +1,20 @@
 # React + TypeScript + Vite
 
+O cabeçalho permite entrar e acessar **Meus dados** (`/meus-dados`). O perfil
+permite atualizar contatos e dados da instituição, com nome e CPF bloqueados.
+Contrato e decisões em [Conta e perfil](../backend/profile.md).
+
+O fluxo de reservas está integrado ao backend. Veja
+[Integração de reservas](reservations-integration.md) para configuração,
+contratos, fotos, validações e pendências. Verificações: `npm test`,
+`npm run lint` e `npm run build`.
+
+O painel geral de administração está em `/admin`, também acessível pelo rodapé.
+Reservas é o primeiro módulo operacional, em `/admin/reservas`; as demais áreas
+de gestão aparecem como planejadas. Somente contas `admin` acessam o painel.
+Estrutura em [Painel administrativo](../backend/admin-panel.md); acesso local e
+contratos de reservas em [Módulo de reservas](../backend/admin-reservations.md).
+
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
 Currently, two official plugins are available:

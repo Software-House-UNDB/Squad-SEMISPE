@@ -1,4 +1,183 @@
 @import "tailwindcss";
+
+@theme {
+  /* Tipografia Oficial (Manual de Identidade Visual - ASCOM / SEMISPE)
+     Recomendação: Família Helvetica (com Helvetica Neue / Helvetica prioritários,
+     e Inter / Arial como fallbacks métricos para Windows e navegadores) */
+  --font-sans: 'Helvetica Neue', Helvetica, 'Inter', Arial, sans-serif;
+  --font-heading: 'Helvetica Neue', Helvetica, 'Inter', Arial, sans-serif;
+
+  /* Paleta Oficial de Cores (Página 2 do Manual de Identidade Visual) */
+  --color-semispe-yellow: #ffdf00;       /* Amarelo Oficial */
+  --color-semispe-yellow-light: #ffeb80; /* Amarelo claro: identidade da Estrutura */
+  --color-semispe-yellow-soft: #fff4bd;  /* Amarelo bem claro: fundo do item ativo e do hover na Estrutura */
+  --color-semispe-blue: #1f71b7;         /* Azul Principal do Logotipo */
+  --color-semispe-blue-dark: #033165;    /* Azul Escuro (Post / Fundo Institucional) */
+  --color-semispe-teal: #22755e;         /* Verde Petróleo */
+  --color-semispe-teal-deep: #134d3e;    /* Verde Petróleo escuro (base do degradê de Indicadores) */
+  --color-semispe-green-light: #92bf71;  /* Verde Claro */
+  --color-semispe-green-dark: #216700;   /* Verde Escuro */
+  --color-semispe-green-olive: #8ea700;  /* Verde Oliva */
+
+  /* Cores de Interface do Sistema */
+  --color-semispe-header: #efefef;       /* Aplicação em Fundo Claro */
+  --color-semispe-surface: #f3f5f1;      /* Fundo das seções claras (Galeria, Parceiros) */
+  --color-semispe-light: #ffffff;
+  --color-semispe-dark: #033165;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-semispe-blue-dark);
+    color: var(--color-semispe-light);
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 800; /* Helvetica Hebrew negritado para títulos e destaques */
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-semispe-yellow);
+    outline-offset: 3px;
+  }
+}
+
+/* ─── Animações de Entrada do Hero (Scroll Reveal / Stagger) ──────────────── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Intro da Logo: escala partindo do centro */
+@keyframes logoReveal {
+  0%   { opacity: 0; transform: scale(0.88); }
+  15%  { opacity: 1; transform: scale(1); }
+  80%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.04); }
+}
+
+/* Fade-out da tela de intro inteira */
+@keyframes introScreenFadeOut {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Pulso sutil no botão CTA amarelo */
+@keyframes ctaPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 223, 0, 0.5); }
+  50%       { box-shadow: 0 0 0 10px rgba(255, 223, 0, 0); }
+}
+
+/* Shimmer nas linhas topográficas */
+@keyframes shimmer {
+  0%   { opacity: 0.85; filter: brightness(1); }
+  50%  { opacity: 1;    filter: brightness(1.15); }
+  100% { opacity: 0.85; filter: brightness(1); }
+}
+
+/* Contador de números (reveal) */
+@keyframes countReveal {
+  from { opacity: 0; transform: translateY(12px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Tempo até o próximo slide no indicador ativo do carrossel */
+@keyframes galleryProgress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* Ponte do ecossistema (Quem Somos): traços que se desenham e torres que sobem */
+@keyframes bridgeDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes bridgeRise {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+/* ─── Classes Utilitárias de Animação ─────────────────────────────────────── */
+
+/*
+ * Ponte do ecossistema: antes de entrar na tela, os traços (`data-draw`, com pathLength="1")
+ * ficam apagados, as torres (`data-rise`) ficam rentes à água e o resto (`data-fade`) invisível.
+ * Cada peça recebe o próprio atraso em `--delay`.
+ */
+.ponte [data-draw] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.ponte [data-rise] {
+  transform: scaleY(0);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.ponte [data-fade] {
+  opacity: 0;
+}
+.ponte.is-visible [data-draw] {
+  animation: bridgeDraw var(--duration, 0.9s) ease-out var(--delay, 0s) forwards;
+}
+.ponte.is-visible [data-rise] {
+  animation: bridgeRise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) var(--delay, 0s) forwards;
+}
+.ponte.is-visible [data-fade] {
+  animation: fadeIn 0.6s ease-out var(--delay, 0s) forwards;
+}
+
+/* Pausa todas as animações para quem prefere reduzir movimento (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Mapa de estações (Leaflet) ───────────────────────────────────────────── */
 /* Tailwind preflight (img max-width:100%) quebra os tiles do Leaflet */
 .leaflet-container .leaflet-tile {
   max-width: none !important;

@@ -38,6 +38,36 @@ npm run migration:revert
 - `src/database/database.module.ts`: conexao TypeORM (MySQL)
 - `src/database/data-source.ts`: DataSource usado pelo CLI do TypeORM (migrations)
 
-Autenticacao ainda nao foi implementada. Quando for, o plano e JWT proprio
-(`@nestjs/jwt` + `passport-jwt`), com usuarios persistidos no banco deste
-projeto.
+Autenticação JWT implementada com `@nestjs/jwt` e `passport-jwt`, usuários no
+MySQL e autorização por proprietário/administrador. Trocar a senha revoga os
+tokens anteriores. Contratos em [api.md](api.md).
+
+## Correções de integridade
+
+Histórico de ideias, sessões, espaços reservados, validações e rate limit em
+[integrity-fixes.md](integrity-fixes.md). Consulte esse documento antes de aplicar
+a migration de correção e atualizar a aplicação.
+
+## API de reservas
+
+O painel geral do portal está organizado em módulos. Estrutura e disponibilidade
+em [admin-panel.md](admin-panel.md); acesso local e gestão de reservas em
+[admin-reservations.md](admin-reservations.md).
+
+Contrato das rotas, exemplos multipart e regras de aprovação em
+[reservations-api.md](reservations-api.md).
+
+## API de Fale conosco
+
+Recebimento público, consulta administrativa e configuração futura de SMTP em
+[contacts-api.md](contacts-api.md).
+
+## API do Ecossistema de Inovação
+
+CRUD de atores, categorias, filtros e dados GeoJSON para mapa em
+[ecosystem-api.md](ecosystem-api.md).
+
+## API de Notícias
+
+Rascunhos, publicação, categorias, consultas públicas e administração em
+[news-api.md](news-api.md).
