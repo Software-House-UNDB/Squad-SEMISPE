@@ -10,6 +10,10 @@ import photoJornadaInova from '../assets/photos/eventos/jornada-inova-sao-luis-p
 import photoHackathonMentoria from '../assets/photos/eventos/hackathon-do-mercado-mentoria.webp';
 import photoForum from '../assets/photos/eventos/forum-cidades-digitais-palco.webp';
 import photoEspaco from '../assets/photos/eventos/jornada-inova-sao-luis-espaco.webp';
+import logoPortoDigital from '../assets/partners/porto-digital.png';
+import logoCasaAzul from '../assets/partners/casa-azul-ventures.png';
+import logoUndb from '../assets/partners/undb.png';
+import logoIfma from '../assets/partners/ifma.png';
 
 /**
  * Conteúdo da página Quem Somos. Datas, números, programas e acordos vêm das notícias
@@ -183,12 +187,13 @@ export const QUEM_SOMOS_CONTENT: QuemSomosContent = {
   ],
 
   goals: [
-    { id: 'cidadaos', value: '30 mil', label: 'cidadãos alcançados', accent: BRAND_ACCENTS.azul },
+    { id: 'cidadaos', value: '30', unit: 'mil', label: 'cidadãos alcançados', accent: BRAND_ACCENTS.azul },
     { id: 'negocios', value: '1.100', label: 'negócios beneficiados', accent: BRAND_ACCENTS.verde },
     { id: 'jovens', value: '500', label: 'jovens formados em tecnologia', accent: BRAND_ACCENTS.verdePetroleo },
     {
       id: 'investimento',
-      value: 'R$ 50 mi',
+      value: 'R$ 50',
+      unit: 'mi',
       label: 'investidos pela Prefeitura em inovação, de 2026 a 2029',
       accent: BRAND_ACCENTS.amarelo,
     },
@@ -200,24 +205,28 @@ export const QUEM_SOMOS_CONTENT: QuemSomosContent = {
       partner: 'Porto Digital',
       origin: 'Recife (PE)',
       description: 'Protocolo de intenções para troca de experiências e metodologias.',
+      logo: logoPortoDigital,
     },
     {
       id: 'casa-azul',
       partner: 'Casa Azul Ventures',
       origin: 'Fortaleza (CE)',
       description: 'Cooperação técnica em aceleração de startups e conexão com investidores.',
+      logo: logoCasaAzul,
     },
     {
       id: 'undb',
       partner: 'Centro Universitário UNDB',
       origin: 'São Luís (MA)',
       description: 'Cooperação técnica em soluções digitais inovadoras.',
+      logo: logoUndb,
     },
     {
       id: 'ifma',
       partner: 'IFMA',
       origin: 'Maranhão',
       description: 'Convênio para apoiar startups e iniciativas de inovação.',
+      logo: logoIfma,
     },
   ],
 

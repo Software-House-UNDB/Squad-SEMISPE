@@ -85,7 +85,10 @@ export interface ProgramArea {
 /** Meta anunciada no lançamento do Parque */
 export interface Goal {
   id: string;
+  /** Número em destaque (ex.: "30", "R$ 50") */
   value: string;
+  /** Unidade depois do número, em destaque verde (ex.: "mil", "mi") */
+  unit?: string;
   label: string;
   accent: SectionAccent;
 }
@@ -97,6 +100,8 @@ export interface Agreement {
   /** Cidade ou estado do parceiro */
   origin: string;
   description: string;
+  /** Logomarca do parceiro (imagem local) */
+  logo: string;
 }
 
 export interface QuemSomosContent {

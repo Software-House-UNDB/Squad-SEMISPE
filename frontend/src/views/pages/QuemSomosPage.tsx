@@ -6,6 +6,7 @@ import { QuemSomosHero } from '../components/QuemSomosHero';
 import { MissaoVisaoValores } from '../components/MissaoVisaoValores';
 import { AtuacaoMetas } from '../components/AtuacaoMetas';
 import { EstruturaCallout } from '../components/EstruturaCallout';
+import { AcordosLancamento } from '../components/AcordosLancamento';
 import { SiteFooter } from '../components/SiteFooter';
 
 /**
@@ -39,12 +40,8 @@ export function QuemSomosPage() {
       <main className="flex-1">
         <QuemSomosHero intro={content.intro} section={vm.section} />
         <MissaoVisaoValores statements={content.statements} values={content.values} />
-        <AtuacaoMetas
-          bridge={content.bridge}
-          programs={content.programs}
-          goals={content.goals}
-          agreements={content.agreements}
-        />
+        <AtuacaoMetas bridge={content.bridge} programs={content.programs} goals={content.goals} />
+        <AcordosLancamento agreements={content.agreements} />
         <EstruturaCallout
           content={content.estrutura}
           section={vm.estruturaSection}
