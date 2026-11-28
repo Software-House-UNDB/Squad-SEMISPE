@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-27T20:27:53.124Z",
+  "generatedAt": "2026-11-28T05:28:37.312Z",
   "stations": [
     {
       "id": 37592,
@@ -7,44 +7,44 @@
       "latitude": -2.495482,
       "longitude": -44.209751,
       "online": true,
-      "lastDataReceivedAt": "2026-11-27T20:26:16.000Z",
+      "lastDataReceivedAt": "2026-11-28T05:26:16.000Z",
       "aqi": 19,
       "parameters": [
         {
           "key": "pc10",
           "name": "PC10",
           "unit": "/m3",
-          "value": 36.03
+          "value": 30.74
         },
         {
           "key": "pc0.5",
           "name": "PC0.5",
           "unit": "/m3",
-          "value": 27.77
+          "value": 24.3
         },
         {
           "key": "pc1.0",
           "name": "PC1.0",
           "unit": "/m3",
-          "value": 34.21
+          "value": 29.47
         },
         {
           "key": "pc2.5",
           "name": "PC2.5",
           "unit": "/m3",
-          "value": 35.71
+          "value": 30.51
         },
         {
           "key": "pc4.0",
           "name": "PC4.0",
           "unit": "/m3",
-          "value": 35.98
+          "value": 30.7
         },
         {
           "key": "pc5.0",
           "name": "PC5.0",
           "unit": "/m3",
-          "value": 35.98
+          "value": 30.7
         },
         {
           "key": "no2_we",
@@ -80,31 +80,31 @@
           "key": "temp",
           "name": "Temperature",
           "unit": "DegC",
-          "value": 27.48
+          "value": 25.97
         },
         {
           "key": "humid",
           "name": "Humidity",
           "unit": "%",
-          "value": 73.75
+          "value": 77.62
         },
         {
           "key": "pm2.5",
           "name": "PM2.5",
           "unit": "μg/m3",
-          "value": 6.21
+          "value": 5.09
         },
         {
           "key": "pm10",
           "name": "PM10",
           "unit": "μg/m3",
-          "value": 13.03
+          "value": 10.69
         },
         {
           "key": "co2",
           "name": "CO2",
           "unit": "ppm",
-          "value": 418.8
+          "value": 453.2
         },
         {
           "key": "tvoc",
@@ -116,7 +116,7 @@
           "key": "pm1",
           "name": "PM1.0",
           "unit": "μg/m3",
-          "value": 4.51
+          "value": 3.87
         }
       ]
     },
@@ -126,44 +126,44 @@
       "latitude": -2.637596,
       "longitude": -44.26797,
       "online": true,
-      "lastDataReceivedAt": "2026-11-27T20:26:43.000Z",
-      "aqi": 21,
+      "lastDataReceivedAt": "2026-11-28T05:26:43.000Z",
+      "aqi": 19,
       "parameters": [
         {
           "key": "pc10",
           "name": "PC10",
           "unit": "/m3",
-          "value": 34.59
+          "value": 33.44
         },
         {
           "key": "pc0.5",
           "name": "PC0.5",
           "unit": "/m3",
-          "value": 27.05
+          "value": 26.28
         },
         {
           "key": "pc1.0",
           "name": "PC1.0",
           "unit": "/m3",
-          "value": 33.01
+          "value": 31.98
         },
         {
           "key": "pc2.5",
           "name": "PC2.5",
           "unit": "/m3",
-          "value": 34.29
+          "value": 33.17
         },
         {
           "key": "pc4.0",
           "name": "PC4.0",
           "unit": "/m3",
-          "value": 34.53
+          "value": 33.38
         },
         {
           "key": "pc5.0",
           "name": "PC5.0",
           "unit": "/m3",
-          "value": 34.53
+          "value": 33.38
         },
         {
           "key": "no2_we",
@@ -193,31 +193,31 @@
           "key": "temp",
           "name": "Temperature",
           "unit": "DegC",
-          "value": 28.24
+          "value": 25.92
         },
         {
           "key": "humid",
           "name": "Humidity",
           "unit": "%",
-          "value": 82.62
+          "value": 95.75
         },
         {
           "key": "pm2.5",
           "name": "PM2.5",
           "unit": "μg/m3",
-          "value": 5.79
+          "value": 5.56
         },
         {
           "key": "pm10",
           "name": "PM10",
           "unit": "μg/m3",
-          "value": 12.16
+          "value": 11.67
         },
         {
           "key": "co2",
           "name": "CO2",
           "unit": "ppm",
-          "value": 417.31
+          "value": 453.85
         },
         {
           "key": "tvoc",
@@ -229,7 +229,7 @@
           "key": "pm1",
           "name": "PM1.0",
           "unit": "μg/m3",
-          "value": 4.3
+          "value": 4.17
         },
         {
           "key": "data_availability",
@@ -245,32 +245,32 @@
       "latitude": -2.541173,
       "longitude": -44.256553,
       "online": true,
-      "lastDataReceivedAt": "2026-11-27T20:26:16.000Z",
-      "aqi": 16,
+      "lastDataReceivedAt": "2026-11-28T05:27:00.000Z",
+      "aqi": 13,
       "parameters": [
         {
           "key": "pc10",
           "name": "PC10",
           "unit": "/m3",
-          "value": 28.25
+          "value": 46.74
         },
         {
           "key": "pc0.5",
           "name": "PC0.5",
           "unit": "/m3",
-          "value": 21.41
+          "value": null
         },
         {
           "key": "pc1.0",
           "name": "PC1.0",
           "unit": "/m3",
-          "value": 26.46
+          "value": 46.2
         },
         {
           "key": "pc2.5",
           "name": "PC2.5",
           "unit": "/m3",
-          "value": 27.67
+          "value": 46.64
         },
         {
           "key": "pc4.0",
@@ -330,19 +330,19 @@
           "key": "pm2.5",
           "name": "PM2.5",
           "unit": "μg/m3",
-          "value": 4.79
+          "value": 6.5
         },
         {
           "key": "pm10",
           "name": "PM10",
           "unit": "μg/m3",
-          "value": 10.05
+          "value": 13.64
         },
         {
           "key": "co2",
           "name": "CO2",
           "unit": "ppm",
-          "value": 633.88
+          "value": 671.88
         },
         {
           "key": "tvoc",
@@ -354,7 +354,7 @@
           "key": "pm1",
           "name": "PM1.0",
           "unit": "μg/m3",
-          "value": 3.49
+          "value": 5.85
         }
       ]
     },
@@ -483,104 +483,104 @@
       "latitude": -2.574215,
       "longitude": -44.209112,
       "online": true,
-      "lastDataReceivedAt": "2026-11-27T20:26:31.000Z",
-      "aqi": 34,
+      "lastDataReceivedAt": "2026-11-28T05:26:31.000Z",
+      "aqi": 30,
       "parameters": [
         {
           "key": "temp",
           "name": "Temperature",
           "unit": "DegC",
-          "value": 27.95
+          "value": 25.93
         },
         {
           "key": "humid",
           "name": "Humidity",
           "unit": "%",
-          "value": 71.11
+          "value": 77.9
         },
         {
           "key": "pm2.5",
           "name": "PM2.5",
           "unit": "μg/m3",
-          "value": 6.2
+          "value": 4.09
         },
         {
           "key": "pm10",
           "name": "PM10",
           "unit": "μg/m3",
-          "value": 13.04
+          "value": 8.6
         },
         {
           "key": "no2",
           "name": "NO2",
           "unit": "ppb",
-          "value": 7.96
+          "value": 0
         },
         {
           "key": "o3",
           "name": "O3",
           "unit": "ppb",
-          "value": 40.25
+          "value": 36.57
         },
         {
           "key": "co2",
           "name": "CO2",
           "unit": "ppm",
-          "value": 483.73
+          "value": 497.55
         },
         {
           "key": "tvoc",
           "name": "TVOC",
           "unit": "ppm",
-          "value": 0.13
+          "value": 0.09
         },
         {
           "key": "pm1",
           "name": "PM1.0",
           "unit": "μg/m3",
-          "value": 4.59
+          "value": 3.15
         },
         {
           "key": "pc10",
           "name": "PC10",
           "unit": "/m3",
-          "value": 36.8
+          "value": 25.23
         },
         {
           "key": "pc0.5",
           "name": "PC0.5",
           "unit": "/m3",
-          "value": 28.43
+          "value": 19.94
         },
         {
           "key": "pc1.0",
           "name": "PC1.0",
           "unit": "/m3",
-          "value": 34.91
+          "value": 24.15
         },
         {
           "key": "pc2.5",
           "name": "PC2.5",
           "unit": "/m3",
-          "value": 36.46
+          "value": 25.04
         },
         {
           "key": "pc4.0",
           "name": "PC4.0",
           "unit": "/m3",
-          "value": 36.74
+          "value": 25.2
         },
         {
           "key": "pc5.0",
           "name": "PC5.0",
           "unit": "/m3",
-          "value": 36.74
+          "value": 25.2
         },
         {
           "key": "no2_we",
           "name": "NO2 WE voltage",
           "unit": "",
-          "value": 308.46
+          "value": 306.42
         },
         {
           "key": "no2_ae",
@@ -592,7 +592,7 @@
           "key": "o3_we",
           "name": "O3 WE voltage",
           "unit": "",
-          "value": 416.07
+          "value": 410.94
         },
         {
           "key": "o3_ae",
@@ -614,50 +614,50 @@
       "latitude": -2.531559,
       "longitude": -44.306566,
       "online": true,
-      "lastDataReceivedAt": "2026-11-27T20:26:58.000Z",
-      "aqi": 32,
+      "lastDataReceivedAt": "2026-11-28T05:27:43.000Z",
+      "aqi": 29,
       "parameters": [
         {
           "key": "temp",
           "name": "Temperature",
           "unit": "DegC",
-          "value": 28.41
+          "value": 26.76
         },
         {
           "key": "humid",
           "name": "Humidity",
           "unit": "%",
-          "value": 72.75
+          "value": 76.43
         },
         {
           "key": "pm2.5",
           "name": "PM2.5",
           "unit": "μg/m3",
-          "value": 5.34
+          "value": 5.48
         },
         {
           "key": "pm10",
           "name": "PM10",
           "unit": "μg/m3",
-          "value": 11.22
+          "value": 11.51
         },
         {
           "key": "no2",
           "name": "NO2",
           "unit": "ppb",
-          "value": 1.31
+          "value": 0.22
         },
         {
           "key": "o3",
           "name": "O3",
           "unit": "ppb",
-          "value": 38.54
+          "value": 36.58
         },
         {
           "key": "co2",
           "name": "CO2",
           "unit": "ppm",
-          "value": 408.46
+          "value": 436.92
         },
         {
           "key": "tvoc",
@@ -669,49 +669,49 @@
           "key": "pm1",
           "name": "PM1.0",
           "unit": "μg/m3",
-          "value": 3.71
+          "value": 3.9
         },
         {
           "key": "pc10",
           "name": "PC10",
           "unit": "/m3",
-          "value": 29.7
+          "value": 31.33
         },
         {
           "key": "pc0.5",
           "name": "PC0.5",
           "unit": "/m3",
-          "value": 22.23
+          "value": 23.79
         },
         {
           "key": "pc1.0",
           "name": "PC1.0",
           "unit": "/m3",
-          "value": 27.89
+          "value": 29.57
         },
         {
           "key": "pc2.5",
           "name": "PC2.5",
           "unit": "/m3",
-          "value": 29.37
+          "value": 31.01
         },
         {
           "key": "pc4.0",
           "name": "PC4.0",
           "unit": "/m3",
-          "value": 29.64
+          "value": 31.27
         },
         {
           "key": "pc5.0",
           "name": "PC5.0",
           "unit": "/m3",
-          "value": 29.64
+          "value": 31.27
         },
         {
           "key": "no2_we",
           "name": "NO2 WE voltage",
           "unit": "",
-          "value": 295.14
+          "value": 294.12
         },
         {
           "key": "no2_ae",
